@@ -158,33 +158,34 @@ funguje beze změny.
 
 ## Nasazení na Zerops
 
-Projekt obsahuje dva soubory pro nasazení na [Zerops](https://zerops.io):
+Projekt běží na [Zerops](https://zerops.io) v projektu **web**
+(`oJ1DoA35QJqucQdBelpCWA`), služba **nodejs** (`taCu7FVBSuq2GBKkeKvsHQ`) +
+služba **postgresql**. Pipeline nasazení je v `zerops.yml`
+(`zerops-project-import.yml` je jen referenční popis infrastruktury pro
+založení od nuly někde jinde).
 
-- **`zerops.yml`** — build a run pipeline (co udělat, aby z kódu vznikla
-  běžící aplikace). Používá ho každé nasazení.
-- **`zerops-project-import.yml`** — jednorázové založení projektu a služeb
-  (databáze + aplikace). Použiješ ho jen na úplném začátku.
+**Před prvním pushem** musí mít služba `nodejs` v Zerops GUI
+(Environment Variables) nastavené — bez toho build/start spadne:
 
-Postup (bez potřeby GitHubu):
+| Klíč | Hodnota |
+| --- | --- |
+| `DATABASE_URI` | `${postgresql_connectionString}/${postgresql_dbName}` |
+| `PAYLOAD_SECRET` | vygenerovaný náhodný řetězec (jako lokální v `.env`), ideálně jako **Secret** |
+| `NEXT_PUBLIC_SERVER_URL` | veřejná adresa (`https://nodejs-<tvoje-subdoména>-3000.prg1.zerops.app`, nebo vlastní doména) |
+
+`NEXT_PUBLIC_*` proměnné Next.js zapéká už při buildu — musí tam být
+před pushem, ne až po něm.
+
+Nasazení:
 
 ```powershell
-# 1. Nainstaluj zCLI a přihlaš se (token z Zerops GUI)
-zcli login <token>
-
-# 2. Založ projekt a služby podle zerops-project-import.yml
-zcli project import zerops-project-import.yml
-
-# 3. V administraci Zerops nastav tajný PAYLOAD_SECRET (services → app →
-#    Environment Variables → Add secret) — hodnotu vygeneruješ stejně jako
-#    lokální PAYLOAD_SECRET v .env
-
-# 4. Nasaď appku z tohoto adresáře
-zcli push
+zcli login <token>       # token z Zerops GUI → Access Token Management
+zcli push nodejs --setup nodejs -P oJ1DoA35QJqucQdBelpCWA
 ```
 
 Po prvním nasazení:
-- oprav `NEXT_PUBLIC_SERVER_URL` na skutečnou adresu webu (dočasnou z Zerops,
-  nebo vlastní doménu) — používá se pro SEO, CORS a CSRF,
+- povol veřejnou subdoménu: `zcli service enable-subdomain -P oJ1DoA35QJqucQdBelpCWA -S taCu7FVBSuq2GBKkeKvsHQ`
+  (do prvního nasazení to nejde — Zerops do té doby neví, že služba mluví HTTP),
 - přidej službu **Object Storage** a vyplň `S3_*` proměnné (jinak nahrané
   soubory při dalším nasazení zmizí — viz sekci výše),
 - spusť `npm run seed` a `npm run seed:ucty` proti produkci (přes Zerops

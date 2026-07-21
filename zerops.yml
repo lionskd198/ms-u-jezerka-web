@@ -6,28 +6,31 @@
 # příkazem. Tenhle soubor Zerops přesně říká: (1) jak z kódu udělat spustitelnou
 # aplikaci ("build") a (2) jak ji pak provozovat ("run").
 #
-# `setup: app` níže musí odpovídat NÁZVU (hostname) Node.js služby v tvém
-# Zerops projektu — v `zerops-project-import.yml` je proto služba pojmenovaná
-# taky "app". Když si službu založíš ručně v GUI, dej jí stejné jméno,
-# ať to sedí.
+# `setup: nodejs` níže musí odpovídat NÁZVU (hostname) Node.js služby v tvém
+# Zerops projektu — v projektu "web" (https://app.zerops.io) se služba
+# jmenuje přesně takhle. Base `nodejs@24` odpovídá verzi, se kterou byla
+# služba založená (alpine/nodejs@24).
 #
-# JAK NASADIT (nejjednodušší cesta, bez GitHubu):
-#   1. Nainstaluj zCLI: https://docs.zerops.io/references/cli
-#   2. zcli login <token>              (token vygeneruješ v Zerops GUI)
-#   3. Založ projekt a služby — buď v GUI, nebo příkazem
-#      `zcli project import zerops-project-import.yml`
-#   4. V tomto adresáři spusť:  zcli push
+# JAK NASADIT:
+#   1. Nainstaluj zCLI: npm i -g @zerops/zcli
+#   2. zcli login <token>   (token z Zerops GUI → Access Token Management)
+#   3. V tomto adresáři spusť:
+#        zcli push nodejs --setup nodejs -P oJ1DoA35QJqucQdBelpCWA
 #      (Zerops zabalí projekt, pošle ho na server a spustí build+run podle
 #       tohoto souboru — commit do gitu ani GitHub k tomu není potřeba.)
 #
 # Alternativa: připojit GitHub repozitář v Zerops GUI (Nastavení služby →
 # Git Integration) — pak se nasadí automaticky při každém "git push".
+#
+# Předtím, než poprvé pushneš, musí mít služba "nodejs" v Zerops GUI
+# (Environment Variables) nastavené: DATABASE_URI, PAYLOAD_SECRET,
+# NEXT_PUBLIC_SERVER_URL — viz README.md, sekce Nasazení na Zerops.
 
 zerops:
-  - setup: app
+  - setup: nodejs
     build:
-      # Verze Node.js — musí sedět s `engines.node` v package.json (>=20.9).
-      base: nodejs@22
+      # Verze Node.js — musí sedět s tím, s čím byla služba založená.
+      base: nodejs@24
 
       buildCommands:
         # `--include=dev` je důležité: bez něj by se v produkčním prostředí
@@ -40,7 +43,7 @@ zerops:
         # (na tenhle problém jsme narazili i lokálně, viz README).
         - npm run generate:importmap
 
-        # `payload build` = ověří konfiguraci a spustí produkční build Next.js.
+        # Produkční build Next.js (admin i veřejný web dohromady).
         - npm run build
 
       # Které soubory se z build kroku přenesou do běžícího kontejneru.
@@ -59,7 +62,7 @@ zerops:
         - .next/cache
 
     run:
-      base: nodejs@22
+      base: nodejs@24
 
       ports:
         - port: 3000

@@ -1,54 +1,55 @@
 # =============================================================================
-# ZEROPS — založení projektu a služeb (spustí se JEN JEDNOU, na začátku)
+# ZEROPS — založení projektu a služeb (referenční soubor)
 # =============================================================================
 #
-# Tenhle soubor NENÍ nasazovací pipeline (to je `zerops.yml`) — slouží
-# k jednorázovému vytvoření projektu a jeho dvou služeb v Zerops:
-#   • "db"  — databáze PostgreSQL
-#   • "app" — Node.js aplikace (tenhle web), viz build/run v zerops.yml
+# ⚠️ Tenhle soubor už NEPOUŽÍVÁŠ ke spuštění — projekt "web" (ID
+# oJ1DoA35QJqucQdBelpCWA) se službami "nodejs" a "postgresql" už na Zerops
+# existuje (založil se přes GUI). Soubor tu zůstává jako referenční popis
+# infrastruktury pro případ, že bys ji někdy potřeboval založit znovu
+# (např. nový projekt, jiný účet) — pak spustíš:
 #
-# Použití:
 #   zcli project import zerops-project-import.yml
 #
+# Nasazovací pipeline (co se děje PŘI KAŽDÉM nasazení) je v `zerops.yml`.
+#
 # ⚠️ Schéma importního YAML se u Zerops občas mění — než soubor použiješ,
-# porovnej ho prosím s aktuální dokumentací (docs.zerops.io → Import), hlavně
-# pokud `zcli` nahlásí chybu u konkrétního klíče. Verze služeb (@16, @22…)
-# jsou platné k polovině roku 2026; zkontroluj, jestli mezitím nevyšla novější.
+# porovnej ho s aktuální dokumentací (docs.zerops.io → Import).
 
 project:
-  name: skolka
+  name: web
 
 services:
   # ---------------------------------------------------------------------------
-  # Databáze — PostgreSQL. Hostname "db" používá `app` k připojení
+  # Databáze — PostgreSQL. Hostname "postgresql" používá "nodejs" k připojení
   # (viz DATABASE_URI níže).
   # ---------------------------------------------------------------------------
-  - hostname: db
+  - hostname: postgresql
     type: postgresql@16
     mode: NON_HA # jedna instance bez zálohy navíc — v pořádku pro malý web školky
-    priority: 10 # vyšší priorita = vytvoří se dřív než "app", které ji potřebuje
+    priority: 10 # vyšší priorita = vytvoří se dřív než "nodejs", které ji potřebuje
 
   # ---------------------------------------------------------------------------
   # Aplikace — Next.js + Payload (build/run kroky viz zerops.yml v tomto repu).
   # ---------------------------------------------------------------------------
-  - hostname: app
-    type: nodejs@22
+  - hostname: nodejs
+    type: nodejs@24
     priority: 1
-    # Dočasná veřejná adresa tvaru https://app-xxxxxxxx.zerops.app — hned po
+    # Veřejná adresa tvaru https://nodejs-XXXX-3000.prg1.zerops.app — hned po
     # založení uvidíš web na internetu, i než si připojíš vlastní doménu.
     enableSubdomainAccess: true
     ports:
       - port: 3000
         httpSupport: true
     envVariables:
-      # ${db_connectionString} = proměnná, kterou automaticky vytvořila
-      # služba "db" výše (Zerops takhle propojuje služby mezi sebou).
-      DATABASE_URI: ${db_connectionString}
+      # ${postgresql_connectionString} neobsahuje název databáze, proto
+      # dolepujeme ${postgresql_dbName} — takhle to Zerops propojuje mezi
+      # službami automaticky (žádné heslo se nikam ručně neopisuje).
+      DATABASE_URI: ${postgresql_connectionString}/${postgresql_dbName}
 
-      # ⚠️ DOPLŇ po prvním nasazení: až budeš znát veřejnou adresu webu
-      # (dočasnou z Zerops, nebo vlastní doménu), nastav ji sem — používá se
-      # pro SEO (sitemap, Open Graph), CORS a CSRF. Do té doby web poběží
-      # i s touto výchozí hodnotou, jen SEO odkazy budou ukazovat špatně.
+      # ⚠️ DOPLŇ po prvním nasazení / povolení subdomény skutečnou adresu
+      # (nebo vlastní doménu) — používá se pro SEO (sitemap, Open Graph),
+      # CORS a CSRF. Next.js proměnné NEXT_PUBLIC_* se zapékají už při
+      # buildu, proto musí být nastavené PŘED prvním pushem.
       NEXT_PUBLIC_SERVER_URL: https://zmen-na-skutecnou-adresu.cz
 
       # ⚠️ NEPOVINNÉ, ale doporučené: S3 úložiště pro nahrané soubory
@@ -71,9 +72,8 @@ services:
 
     envSecrets:
       # ⚠️ PAYLOAD_SECRET sem NEVYPLŇUJ přímo — tajný klíč pro podepisování
-      # přihlašovacích tokenů se nastavuje ručně, ať nekončí v žádném souboru:
-      #   • Zerops GUI: služba "app" → Environment Variables → Add secret
-      #   • nebo přes zCLI (přesný příkaz viz `zcli --help` / docs.zerops.io)
+      # přihlašovacích tokenů nastav ručně v Zerops GUI (služba "nodejs" →
+      # Environment Variables → Add secret), ať nekončí v žádném souboru.
       # Vygeneruješ ho stejně jako lokální PAYLOAD_SECRET v .env, např.:
       #   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
       PAYLOAD_SECRET: ~
