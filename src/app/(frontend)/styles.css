@@ -1,0 +1,101 @@
+/*
+ * Globální styly veřejného webu.
+ *
+ * Používáme Tailwind CSS v4 — jediný import níže aktivuje celý framework.
+ * Vzhled se pak skládá přímo v komponentách pomocí utility tříd
+ * (např. class="text-lg font-bold").
+ */
+@import 'tailwindcss';
+
+/*
+ * =============================================================================
+ * DESIGN TOKENY — podle grafického návrhu (varianta „hravá")
+ * =============================================================================
+ * Tailwind v4 se konfiguruje přímo v CSS blokem @theme — každá proměnná
+ * --color-X vytvoří třídy jako bg-X, text-X; --radius-X třídu rounded-X atd.
+ *
+ * Návrh obsahuje i druhou variantu „klidná" (decentnější). Kdybys chtěl
+ * přepnout, stačí vyměnit hodnoty níže za:
+ *   pozadi: oklch(0.98 0.006 210)   primary: oklch(0.42 0.06 210)
+ *   primary-tmava: oklch(0.30 0.05 210)   akcent: oklch(0.68 0.07 150)
+ *   akcent2: oklch(0.88 0.03 80)    inkoust: oklch(0.24 0.01 240)
+ *   tlumena: oklch(0.48 0.01 240)   radius: 10px
+ *   + fonty Lora/Karla místo Baloo 2/Nunito (v layout.tsx)
+ */
+@theme {
+  --color-pozadi: oklch(0.985 0.01 95); /* krémové pozadí stránky */
+  --color-panel: #ffffff; /* pozadí karet */
+  --color-primary: oklch(0.52 0.1 205); /* hlavní modrozelená */
+  --color-primary-tmava: oklch(0.38 0.09 205); /* tmavší varianta (patička, gradient) */
+  --color-akcent: oklch(0.68 0.17 35); /* oranžový akcent (štítky typů) */
+  --color-akcent2: oklch(0.86 0.14 95); /* žlutý akcent (logo, tlačítka, ikony) */
+  --color-inkoust: oklch(0.26 0.02 240); /* barva textu */
+  --color-tlumena: oklch(0.52 0.02 240); /* šedý doplňkový text */
+
+  --radius-karta: 20px; /* zaoblení karet a tlačítek */
+}
+
+/*
+ * Fonty se načítají v layout.tsx přes next/font (--pismo-nadpisy/--pismo-text).
+ * `@theme inline` je napojí na Tailwind třídy font-nadpisy / font-telo.
+ */
+@theme inline {
+  --font-nadpisy: var(--pismo-nadpisy);
+  --font-telo: var(--pismo-text);
+}
+
+/* Plovoucí kruhy v hero sekci (dekorace z návrhu) */
+@keyframes msj-float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(3deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+.animace-plavani {
+  animation: msj-float 9s ease-in-out infinite;
+}
+
+/* Styly pro text vygenerovaný rich text editorem (obsah článků).
+ * Editor vrací čisté HTML značky (p, h2, ul…), kterým Tailwind
+ * resetuje vzhled — tady jim ho vracíme. */
+.obsah-clanku p {
+  margin-bottom: 1rem;
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.obsah-clanku h2 {
+  font-family: var(--pismo-nadpisy);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.obsah-clanku h3 {
+  font-family: var(--pismo-nadpisy);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.obsah-clanku ul,
+.obsah-clanku ol {
+  margin: 0 0 1rem 1.5rem;
+  list-style: revert;
+}
+
+.obsah-clanku a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.obsah-clanku img {
+  border-radius: var(--radius-karta);
+  margin: 1rem 0;
+}

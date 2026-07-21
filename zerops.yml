@@ -1,0 +1,77 @@
+# =============================================================================
+# ZEROPS — konfigurace sestavení a spuštění (build & run pipeline)
+# =============================================================================
+#
+# Co je Zerops: cloudová platforma, kam se dá tenhle projekt nasadit jedním
+# příkazem. Tenhle soubor Zerops přesně říká: (1) jak z kódu udělat spustitelnou
+# aplikaci ("build") a (2) jak ji pak provozovat ("run").
+#
+# `setup: app` níže musí odpovídat NÁZVU (hostname) Node.js služby v tvém
+# Zerops projektu — v `zerops-project-import.yml` je proto služba pojmenovaná
+# taky "app". Když si službu založíš ručně v GUI, dej jí stejné jméno,
+# ať to sedí.
+#
+# JAK NASADIT (nejjednodušší cesta, bez GitHubu):
+#   1. Nainstaluj zCLI: https://docs.zerops.io/references/cli
+#   2. zcli login <token>              (token vygeneruješ v Zerops GUI)
+#   3. Založ projekt a služby — buď v GUI, nebo příkazem
+#      `zcli project import zerops-project-import.yml`
+#   4. V tomto adresáři spusť:  zcli push
+#      (Zerops zabalí projekt, pošle ho na server a spustí build+run podle
+#       tohoto souboru — commit do gitu ani GitHub k tomu není potřeba.)
+#
+# Alternativa: připojit GitHub repozitář v Zerops GUI (Nastavení služby →
+# Git Integration) — pak se nasadí automaticky při každém "git push".
+
+zerops:
+  - setup: app
+    build:
+      # Verze Node.js — musí sedět s `engines.node` v package.json (>=20.9).
+      base: nodejs@22
+
+      buildCommands:
+        # `--include=dev` je důležité: bez něj by se v produkčním prostředí
+        # nenainstalovaly vývojové závislosti (typescript, tailwind, tsx…),
+        # které `next build` a naše seed/migrační skripty potřebují.
+        - npm ci --include=dev
+
+        # Import mapa administrace — po přidání/změně Lexical funkcí nebo
+        # kolekcí je potřeba ji přegenerovat, jinak admin rozhraní spadne
+        # (na tenhle problém jsme narazili i lokálně, viz README).
+        - npm run generate:importmap
+
+        # `payload build` = ověří konfiguraci a spustí produkční build Next.js.
+        - npm run build
+
+      # Které soubory se z build kroku přenesou do běžícího kontejneru.
+      deployFiles:
+        - .next
+        - public
+        - src
+        - node_modules
+        - package.json
+        - next.config.ts
+        - postcss.config.mjs
+
+      # Mezi jednotlivými nasazeními se tohle nemaže — zrychlí to další build.
+      cache:
+        - node_modules
+        - .next/cache
+
+    run:
+      base: nodejs@22
+
+      ports:
+        - port: 3000
+          # Zpřístupní port 3000 na veřejné (HTTPS) adrese vygenerované Zerops,
+          # případně na tvé vlastní doméně po jejím napojení.
+          httpSupport: true
+
+      envVariables:
+        # KRITICKÉ pro Payload: teprve s NODE_ENV=production se vypne
+        # automatický "push" schématu databáze a použijí se místo něj
+        # bezpečné migrace ze složky src/migrations (viz payload.config.ts).
+        NODE_ENV: production
+
+      # Spustí produkční Next.js server (soubory z .next vytvořené při buildu).
+      start: npm start

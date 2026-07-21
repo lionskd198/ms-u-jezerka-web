@@ -1,0 +1,36 @@
+# =============================================================================
+# Docker Compose — PostgreSQL databáze pro vývoj
+# =============================================================================
+# Spuštění:   docker compose up -d      (běží na pozadí)
+# Zastavení:  docker compose stop
+# Smazání:    docker compose down       (data zůstanou ve volume "pgdata")
+#             docker compose down -v    (smaže i data — pozor!)
+#
+# Samotná aplikace (Payload + Next.js) běží přímo na tvém počítači přes
+# `npm run dev` — v Dockeru je jen databáze. To je pro vývoj nejpohodlnější.
+# =============================================================================
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      # Tyto hodnoty musí odpovídat DATABASE_URI v souboru .env
+      POSTGRES_USER: skolka
+      POSTGRES_PASSWORD: skolka
+      POSTGRES_DB: skolka
+    ports:
+      # levá strana = port na tvém PC, pravá = port uvnitř kontejneru
+      - '5432:5432'
+    volumes:
+      # Volume = trvalé úložiště — data přežijí restart i smazání kontejneru
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # Docker se periodicky ptá databáze, jestli už je připravená
+      test: ['CMD-SHELL', 'pg_isready -U skolka -d skolka']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

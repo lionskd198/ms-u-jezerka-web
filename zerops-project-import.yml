@@ -1,0 +1,79 @@
+# =============================================================================
+# ZEROPS — založení projektu a služeb (spustí se JEN JEDNOU, na začátku)
+# =============================================================================
+#
+# Tenhle soubor NENÍ nasazovací pipeline (to je `zerops.yml`) — slouží
+# k jednorázovému vytvoření projektu a jeho dvou služeb v Zerops:
+#   • "db"  — databáze PostgreSQL
+#   • "app" — Node.js aplikace (tenhle web), viz build/run v zerops.yml
+#
+# Použití:
+#   zcli project import zerops-project-import.yml
+#
+# ⚠️ Schéma importního YAML se u Zerops občas mění — než soubor použiješ,
+# porovnej ho prosím s aktuální dokumentací (docs.zerops.io → Import), hlavně
+# pokud `zcli` nahlásí chybu u konkrétního klíče. Verze služeb (@16, @22…)
+# jsou platné k polovině roku 2026; zkontroluj, jestli mezitím nevyšla novější.
+
+project:
+  name: skolka
+
+services:
+  # ---------------------------------------------------------------------------
+  # Databáze — PostgreSQL. Hostname "db" používá `app` k připojení
+  # (viz DATABASE_URI níže).
+  # ---------------------------------------------------------------------------
+  - hostname: db
+    type: postgresql@16
+    mode: NON_HA # jedna instance bez zálohy navíc — v pořádku pro malý web školky
+    priority: 10 # vyšší priorita = vytvoří se dřív než "app", které ji potřebuje
+
+  # ---------------------------------------------------------------------------
+  # Aplikace — Next.js + Payload (build/run kroky viz zerops.yml v tomto repu).
+  # ---------------------------------------------------------------------------
+  - hostname: app
+    type: nodejs@22
+    priority: 1
+    # Dočasná veřejná adresa tvaru https://app-xxxxxxxx.zerops.app — hned po
+    # založení uvidíš web na internetu, i než si připojíš vlastní doménu.
+    enableSubdomainAccess: true
+    ports:
+      - port: 3000
+        httpSupport: true
+    envVariables:
+      # ${db_connectionString} = proměnná, kterou automaticky vytvořila
+      # služba "db" výše (Zerops takhle propojuje služby mezi sebou).
+      DATABASE_URI: ${db_connectionString}
+
+      # ⚠️ DOPLŇ po prvním nasazení: až budeš znát veřejnou adresu webu
+      # (dočasnou z Zerops, nebo vlastní doménu), nastav ji sem — používá se
+      # pro SEO (sitemap, Open Graph), CORS a CSRF. Do té doby web poběží
+      # i s touto výchozí hodnotou, jen SEO odkazy budou ukazovat špatně.
+      NEXT_PUBLIC_SERVER_URL: https://zmen-na-skutecnou-adresu.cz
+
+      # ⚠️ NEPOVINNÉ, ale doporučené: S3 úložiště pro nahrané soubory
+      # (obrázky, dokumenty), aby při každém nasazení nezmizely — kontejner
+      # aplikace je totiž při každém redeploy nový a jeho disk se nezachovává.
+      #
+      # 1. V Zerops GUI přidej do projektu službu "Object Storage".
+      # 2. Zkopíruj z ní přístupové údaje a vlož je sem (přesné názvy
+      #    proměnných se mohou lišit, na obrazovce služby je uvidíš):
+      # S3_BUCKET: nazev-bucketu
+      # S3_ACCESS_KEY_ID: ...
+      # S3_SECRET_ACCESS_KEY: ...
+      # S3_ENDPOINT: https://...
+      # S3_REGION: us-east-1
+      #
+      # Bez těchto proměnných web funguje normálně, jen si soubory ukládá
+      # na disk kontejneru — což znamená, že o ně přijdeš při dalším nasazení
+      # nové verze. Detaily viz komentář u `pouzitS3Uloziste`
+      # v src/payload.config.ts.
+
+    envSecrets:
+      # ⚠️ PAYLOAD_SECRET sem NEVYPLŇUJ přímo — tajný klíč pro podepisování
+      # přihlašovacích tokenů se nastavuje ručně, ať nekončí v žádném souboru:
+      #   • Zerops GUI: služba "app" → Environment Variables → Add secret
+      #   • nebo přes zCLI (přesný příkaz viz `zcli --help` / docs.zerops.io)
+      # Vygeneruješ ho stejně jako lokální PAYLOAD_SECRET v .env, např.:
+      #   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+      PAYLOAD_SECRET: ~
