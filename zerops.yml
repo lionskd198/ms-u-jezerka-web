@@ -47,9 +47,10 @@ zerops:
         - npm run build
 
       # Které soubory se z build kroku přenesou do běžícího kontejneru.
+      # (Projekt nemá složku `public` — pokud ji někdy přidáš, např. kvůli
+      # faviconě, dopiš ji sem.)
       deployFiles:
         - .next
-        - public
         - src
         - node_modules
         - package.json
