@@ -146,77 +146,67 @@ const seed = async () => {
   payload.logger.info('✅ Global „Kontakty" naplněn.')
 
   // ---------------------------------------------------------------------------
-  // KOLEKCE: Aktuality — ukázkové články (jen pokud ještě žádné nejsou)
+  // KOLEKCE: Aktuality — ukázkové články. Každý se kontroluje zvlášť podle
+  // názvu (ne najednou podle "existuje už nějaká aktualita?"), aby později
+  // přidaná ukázka (jako fotogalerie) nezůstala navždy přeskočená jen proto,
+  // že v databázi už jiné aktuality byly.
   // ---------------------------------------------------------------------------
-  const { totalDocs } = await payload.count({ collection: 'aktuality' })
+  const UKAZKOVE_AKTUALITY = [
+    {
+      nazev: 'Muzikoterapie ve školce',
+      typ: 'akce' as const,
+      datumAkce: '2026-06-18T09:00:00.000Z',
+      obsah: odstavce(
+        'Ve čtvrtek 18. června nás čeká oblíbená muzikoterapie. Děti si vyzkouší různé hudební nástroje, zazpívají si a zarelaxují při hudbě.',
+        'Akce probíhá dopoledne v prostorách školky, není potřeba nic platit ani nosit.',
+      ),
+    },
+    {
+      nazev: 'Provoz školky o letních prázdninách',
+      typ: 'informace' as const,
+      obsah: odstavce(
+        'Vážení rodiče, informace o letním provozu školky a termínu uzavření najdete včas zde na webu a na nástěnkách jednotlivých tříd.',
+        'V případě dotazů se obraťte na svou třídní učitelku.',
+      ),
+    },
+    {
+      nazev: 'Nový jídelníček ke stažení',
+      typ: 'dokument' as const,
+      obsah: odstavce(
+        'V sekci Dokumenty najdete aktuální jídelníček na tento týden. Jídelníček pravidelně obměňujeme.',
+      ),
+    },
+    {
+      nazev: 'Fotky z podzimní besídky',
+      typ: 'fotogalerie' as const,
+      odkazNaGalerii: 'https://www.rajce.idnes.cz/',
+      obsah: odstavce(
+        'Podívejte se na fotky z podzimní besídky — děti si užily tanečky, básničky i společné tvoření s rodiči.',
+      ),
+    },
+  ]
 
-  if (totalDocs > 0) {
-    payload.logger.info('ℹ️ Aktuality už existují — ukázkové články přeskakuji.')
-  } else {
-    // Ukázka článku typu "akce" — s datem konání
+  for (const aktualita of UKAZKOVE_AKTUALITY) {
+    const existuje = await payload.find({
+      collection: 'aktuality',
+      where: { nazev: { equals: aktualita.nazev } },
+      limit: 1,
+    })
+    if (existuje.totalDocs > 0) {
+      continue
+    }
     await payload.create({
       collection: 'aktuality',
       data: {
-        nazev: 'Muzikoterapie ve školce',
-        typ: 'akce',
-        datumAkce: '2026-06-18T09:00:00.000Z',
-        obsah: odstavce(
-          'Ve čtvrtek 18. června nás čeká oblíbená muzikoterapie. Děti si vyzkouší různé hudební nástroje, zazpívají si a zarelaxují při hudbě.',
-          'Akce probíhá dopoledne v prostorách školky, není potřeba nic platit ani nosit.',
-        ),
+        ...aktualita,
         publishedAt: new Date().toISOString(),
         // `_status: 'published'` = článek se rovnou publikuje.
         // Bez toho by zůstal jako koncept a na webu by nebyl vidět.
         _status: 'published',
       },
     })
-
-    // Ukázka článku typu "informace"
-    await payload.create({
-      collection: 'aktuality',
-      data: {
-        nazev: 'Provoz školky o letních prázdninách',
-        typ: 'informace',
-        obsah: odstavce(
-          'Vážení rodiče, informace o letním provozu školky a termínu uzavření najdete včas zde na webu a na nástěnkách jednotlivých tříd.',
-          'V případě dotazů se obraťte na svou třídní učitelku.',
-        ),
-        publishedAt: new Date().toISOString(),
-        _status: 'published',
-      },
-    })
-
-    // Ukázka článku typu "dokument" — upozornění na nový soubor
-    await payload.create({
-      collection: 'aktuality',
-      data: {
-        nazev: 'Nový jídelníček ke stažení',
-        typ: 'dokument',
-        obsah: odstavce(
-          'V sekci Dokumenty najdete aktuální jídelníček na tento týden. Jídelníček pravidelně obměňujeme.',
-        ),
-        publishedAt: new Date().toISOString(),
-        _status: 'published',
-      },
-    })
-
-    // Ukázka článku typu "fotogalerie" — název akce, popis a odkaz na fotky
-    await payload.create({
-      collection: 'aktuality',
-      data: {
-        nazev: 'Fotky z podzimní besídky',
-        typ: 'fotogalerie',
-        odkazNaGalerii: 'https://www.rajce.idnes.cz/',
-        obsah: odstavce(
-          'Podívejte se na fotky z podzimní besídky — děti si užily tanečky, básničky i společné tvoření s rodiči.',
-        ),
-        publishedAt: new Date().toISOString(),
-        _status: 'published',
-      },
-    })
-
-    payload.logger.info('✅ Vytvořeny 4 ukázkové aktuality.')
   }
+  payload.logger.info('✅ Ukázkové aktuality zkontrolovány.')
 
   // ---------------------------------------------------------------------------
   // KOLEKCE: Dokumenty — pár ukázkových souborů ze skutečného webu školky
