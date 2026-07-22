@@ -79,5 +79,10 @@ zerops:
         # bezpečné migrace ze složky src/migrations (viz payload.config.ts).
         NODE_ENV: production
 
-      # Spustí produkční Next.js server (soubory z .next vytvořené při buildu).
-      start: npm start
+      # ⚠️ DŮLEŽITÉ: kontejner nemá trvalý disk — při KAŽDÉM nasazení se
+      # nahrané soubory (fotky, dokumenty) ztratí, i když databáze si o nich
+      # pořád "pamatuje". Dokud nemáme S3/Object Storage (viz README, sekce
+      # Úložiště), spouštíme seed při každém startu, aby si aspoň známé
+      # (seedované) soubory samy obnovily. Nově nahrané soubory editorem
+      # ale tohle NEOCHRÁNÍ — ty se při dalším nasazení ztratí taky.
+      start: sh -c "npm run seed && npm start"
