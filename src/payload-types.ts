@@ -143,8 +143,12 @@ export interface Aktualita {
   /**
    * Podle typu se dá na webu filtrovat.
    */
-  typ: 'informace' | 'akce' | 'dokument';
+  typ: 'informace' | 'akce' | 'dokument' | 'fotogalerie';
   datumAkce?: string | null;
+  /**
+   * Odkaz na fotky z akce (např. Rajče, Google Fotky, Facebook album) — zobrazí se jako tlačítko pod článkem.
+   */
+  odkazNaGalerii?: string | null;
   /**
    * Zobrazí se ve výpisu aktualit a v hlavičce článku.
    */
@@ -381,6 +385,7 @@ export interface AktualitySelect<T extends boolean = true> {
   slug?: T;
   typ?: T;
   datumAkce?: T;
+  odkazNaGalerii?: T;
   uvodniObrazek?: T;
   obsah?: T;
   prilohy?: T;
@@ -526,7 +531,7 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
- * Obsah úvodní stránky webu — uvítání, nadpis a statistiky.
+ * Obsah úvodní stránky webu — uvítání, nadpis, obrázek, O nás a fotky.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "o-nas".
@@ -543,12 +548,38 @@ export interface ONas {
    */
   podtitulek?: string | null;
   /**
-   * Čísla v bílém pruhu pod úvodní sekcí (např. „3 třídy").
+   * Obrázek na pozadí úvodní sekce (vpravo, jemně prolnutý do barvy).
    */
-  statistiky?:
+  heroObrazek?: (number | null) | Media;
+  /**
+   * Nadpis nad textem kdo jsme / co děláme / proč to děláme.
+   */
+  oNasNadpis?: string | null;
+  /**
+   * Kdo jsme, co děláme a proč to děláme — zobrazuje se na úvodní stránce pod aktualitami.
+   */
+  oNasText?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Fotky do sekce „O nás". Nahraj přes toto pole — na webu se zobrazí v mřížce.
+   */
+  fotografie?:
     | {
-        hodnota: string;
-        popisek: string;
+        obrazek: number | Media;
+        popisek?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -610,10 +641,13 @@ export interface ONasSelect<T extends boolean = true> {
   stitek?: T;
   nadpis?: T;
   podtitulek?: T;
-  statistiky?:
+  heroObrazek?: T;
+  oNasNadpis?: T;
+  oNasText?: T;
+  fotografie?:
     | T
     | {
-        hodnota?: T;
+        obrazek?: T;
         popisek?: T;
         id?: T;
       };

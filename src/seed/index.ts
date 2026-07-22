@@ -16,9 +16,13 @@
 // Načte proměnné z .env (DATABASE_URI, PAYLOAD_SECRET) — skript běží
 // samostatně mimo Next.js, takže si je musí načíst sám.
 import 'dotenv/config'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { getPayload } from 'payload'
 
 import config from '../payload.config'
+
+const dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /**
  * Pomocná funkce: vyrobí obsah pro pole typu `richText` z obyčejných odstavců.
@@ -62,7 +66,25 @@ const seed = async () => {
   payload.logger.info('🌱 Plním databázi výchozím obsahem…')
 
   // ---------------------------------------------------------------------------
-  // GLOBAL: Úvodní stránka — hero sekce a statistiky
+  // Obrázek do hero sekce (jezírko) — nahraje se do Médií, jen pokud tam
+  // ještě není (podle alt textu), a použije se v globalu „Úvodní stránka".
+  // ---------------------------------------------------------------------------
+  const existujiciHeroObrazek = await payload.find({
+    collection: 'media',
+    where: { alt: { equals: 'Ilustrace jezírka se rákosím' } },
+    limit: 1,
+  })
+
+  const heroObrazek =
+    existujiciHeroObrazek.docs[0] ??
+    (await payload.create({
+      collection: 'media',
+      data: { alt: 'Ilustrace jezírka se rákosím' },
+      filePath: path.resolve(dirname, 'assets/hero-jezirko.png'),
+    }))
+
+  // ---------------------------------------------------------------------------
+  // GLOBAL: Úvodní stránka — hero sekce
   // ---------------------------------------------------------------------------
   await payload.updateGlobal({
     slug: 'o-nas',
@@ -71,11 +93,14 @@ const seed = async () => {
       nadpis: 'Mateřská škola U Jezérka',
       podtitulek:
         'Aktuální informace pro rodiče, dokumenty ke stažení a novinky ze tříd Žabičky, Želvičky a Rybičky.',
-      statistiky: [
-        { hodnota: '3', popisek: 'třídy' },
-        { hodnota: '2–6', popisek: 'let — věk dětí' },
-        { hodnota: '6', popisek: 'pedagožek' },
-      ],
+      heroObrazek: heroObrazek.id,
+      oNasNadpis: 'O nás',
+      oNasText: odstavce(
+        'Jsme trojtřídní mateřská škola v Ratíškovicích. Děti jsou u nás rozdělené do tříd podle věku, což nám umožňuje přizpůsobit činnosti tomu, co která věková skupina zrovna potřebuje.',
+        'Naše velká zahrada sousedí přímo s lesem. Děti tu mají k dispozici průlezky, lanové prvky, venkovní hudební nástroje i malé jezírko, podle kterého se školka jmenuje. Velkou část dne proto trávíme venku.',
+        'Děláme to proto, že věříme v prožitkové učení — děti si věci zkoušejí vlastníma rukama, protože co si samy vyzkouší, to si zapamatují nejlépe. Chceme, aby k nám děti chodily rády a odcházely samostatné a připravené na další krok.',
+      ),
+      // fotografie necháváme prázdné — nahraje editor v administraci.
     },
   })
   payload.logger.info('✅ Global „Úvodní stránka" naplněn.')
@@ -175,8 +200,68 @@ const seed = async () => {
       },
     })
 
-    payload.logger.info('✅ Vytvořeny 3 ukázkové aktuality.')
+    // Ukázka článku typu "fotogalerie" — název akce, popis a odkaz na fotky
+    await payload.create({
+      collection: 'aktuality',
+      data: {
+        nazev: 'Fotky z podzimní besídky',
+        typ: 'fotogalerie',
+        odkazNaGalerii: 'https://www.rajce.idnes.cz/',
+        obsah: odstavce(
+          'Podívejte se na fotky z podzimní besídky — děti si užily tanečky, básničky i společné tvoření s rodiči.',
+        ),
+        publishedAt: new Date().toISOString(),
+        _status: 'published',
+      },
+    })
+
+    payload.logger.info('✅ Vytvořeny 4 ukázkové aktuality.')
   }
+
+  // ---------------------------------------------------------------------------
+  // KOLEKCE: Dokumenty — pár ukázkových souborů ze skutečného webu školky
+  // (msujezerkaratiskovice.cz), ať /dokumenty nevypadá prázdně. Každý se
+  // nahraje jen pokud tam ještě není (podle názvu) — skript jde spustit znovu.
+  // ---------------------------------------------------------------------------
+  const UKAZKOVE_DOKUMENTY = [
+    {
+      nazev: 'Školní vzdělávací program',
+      kategorie: 'vzdelavaci-program' as const,
+      soubor: 'ukazkove-dokumenty/skolni-vzdelavaci-program.pdf',
+    },
+    {
+      nazev: 'Školní řád',
+      kategorie: 'rady-a-smernice' as const,
+      soubor: 'ukazkove-dokumenty/skolni-rad.pdf',
+    },
+    {
+      nazev: 'Přihláška k předškolnímu vzdělávání',
+      kategorie: 'prihlasky-a-zapis' as const,
+      soubor: 'ukazkove-dokumenty/prihlaska.pdf',
+    },
+    {
+      nazev: 'Úplata za předškolní vzdělávání',
+      kategorie: 'ostatni' as const,
+      soubor: 'ukazkove-dokumenty/uplata-za-vzdelavani.pdf',
+    },
+  ]
+
+  for (const dokument of UKAZKOVE_DOKUMENTY) {
+    const existuje = await payload.find({
+      collection: 'dokumenty',
+      where: { nazev: { equals: dokument.nazev } },
+      limit: 1,
+    })
+    if (existuje.totalDocs > 0) {
+      continue
+    }
+    await payload.create({
+      collection: 'dokumenty',
+      data: { nazev: dokument.nazev, kategorie: dokument.kategorie },
+      filePath: path.resolve(dirname, 'assets', dokument.soubor),
+    })
+  }
+  payload.logger.info('✅ Ukázkové dokumenty nahrány.')
 
   payload.logger.info('🎉 Hotovo! Databáze je naplněná.')
   // Local API drží připojení k databázi — proces musíme ukončit ručně.

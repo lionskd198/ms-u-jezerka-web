@@ -29,6 +29,7 @@ export const TYPY_AKTUALIT = [
   { label: 'Informace', value: 'informace' },
   { label: 'Akce školky', value: 'akce' },
   { label: 'Dokument', value: 'dokument' },
+  { label: 'Fotogalerie', value: 'fotogalerie' },
 ] as const
 
 /**
@@ -150,6 +151,18 @@ export const Aktuality: CollectionConfig = {
          * datum konání dává smysl jen u typu "akce".
          */
         condition: (data) => data?.typ === 'akce',
+      },
+    },
+    {
+      name: 'odkazNaGalerii',
+      type: 'text',
+      label: 'Odkaz na fotogalerii',
+      admin: {
+        position: 'sidebar',
+        description:
+          'Odkaz na fotky z akce (např. Rajče, Google Fotky, Facebook album) — zobrazí se jako tlačítko pod článkem.',
+        // Dává smysl jen u typu "fotogalerie".
+        condition: (data) => data?.typ === 'fotogalerie',
       },
     },
     {

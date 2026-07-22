@@ -134,6 +134,18 @@ export default async function DetailAktuality({
         </p>
       )}
 
+      {/* U fotogalerií zobrazíme tlačítko na externí odkaz s fotkami */}
+      {aktualita.typ === 'fotogalerie' && aktualita.odkazNaGalerii && (
+        <a
+          href={aktualita.odkazNaGalerii}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-6 inline-block rounded-karta bg-primary px-6 py-3 font-bold text-white transition-[filter] hover:brightness-110"
+        >
+          📷 Zobrazit fotogalerii
+        </a>
+      )}
+
       {/* ===== Úvodní obrázek (pokud je nahraný) ===== */}
       {obrazek?.url && (
         // eslint-disable-next-line @next/next/no-img-element
