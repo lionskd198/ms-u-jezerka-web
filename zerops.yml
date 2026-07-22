@@ -79,8 +79,5 @@ zerops:
         # bezpečné migrace ze složky src/migrations (viz payload.config.ts).
         NODE_ENV: production
 
-      # ⚠️ DOČASNĚ: naplní databázi obsahem (hero fotka, texty, ukázkové
-      # dokumenty), pak teprve spustí server. Skript je bezpečné spustit
-      # opakovaně (existující položky přeskočí). Po doběhnutí vrať zpátky
-      # na `start: npm start`.
-      start: sh -c "npm run seed && npm start"
+      # Spustí produkční Next.js server (soubory z .next vytvořené při buildu).
+      start: npm start
