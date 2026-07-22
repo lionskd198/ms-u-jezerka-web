@@ -58,9 +58,11 @@ zerops:
         - postcss.config.mjs
 
       # Mezi jednotlivými nasazeními se tohle nemaže — zrychlí to další build.
+      # (`.next/cache` se záměrně necachuje — retrieved soubory kolidovaly
+      # s oprávněními nového buildu a next build padal na
+      # "EACCES: permission denied, open '.next/trace'".)
       cache:
         - node_modules
-        - .next/cache
 
     run:
       base: nodejs@24
