@@ -84,6 +84,28 @@ const seed = async () => {
     }))
 
   // ---------------------------------------------------------------------------
+  // Fotka do sekce „O nás" — stejný princip jako hero obrázek výše.
+  // Do globalu ji ale doplníme JEN pokud tam editor mezitím nenahrál svoje
+  // vlastní fotky — seed nesmí přepsat to, co si editor v administraci
+  // sám doplnil (viz `soucasnyONas.fotografie` níže).
+  // ---------------------------------------------------------------------------
+  const existujiciFotoONas = await payload.find({
+    collection: 'media',
+    where: { alt: { equals: 'Děti u ohniště na zahradě' } },
+    limit: 1,
+  })
+
+  const fotoONas =
+    existujiciFotoONas.docs[0] ??
+    (await payload.create({
+      collection: 'media',
+      data: { alt: 'Děti u ohniště na zahradě' },
+      filePath: path.resolve(dirname, 'assets/o-nas-foto-1.jpg'),
+    }))
+
+  const soucasnyONas = await payload.findGlobal({ slug: 'o-nas' })
+
+  // ---------------------------------------------------------------------------
   // GLOBAL: Úvodní stránka — hero sekce
   // ---------------------------------------------------------------------------
   await payload.updateGlobal({
@@ -94,6 +116,11 @@ const seed = async () => {
       podtitulek:
         'Aktuální informace pro rodiče, dokumenty ke stažení a novinky ze tříd Žabičky, Želvičky a Rybičky.',
       heroObrazek: heroObrazek.id,
+      // Fotku přidáme, jen když sekce ještě žádnou nemá — jinak necháme
+      // beze změny (klíč `fotografie` prostě vynecháme z dat k uložení).
+      ...(!soucasnyONas.fotografie?.length && {
+        fotografie: [{ obrazek: fotoONas.id, popisek: 'Děti u ohniště na zahradě' }],
+      }),
       oNasNadpis: 'O nás',
       oNasText: odstavce(
         'Jsme trojtřídní mateřská škola v Ratíškovicích. Děti jsou u nás rozdělené do tříd podle věku, což nám umožňuje přizpůsobit činnosti tomu, co která věková skupina zrovna potřebuje.',
