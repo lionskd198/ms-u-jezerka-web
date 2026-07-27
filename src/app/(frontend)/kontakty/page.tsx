@@ -88,7 +88,7 @@ export default async function KontaktyStranka() {
             src={`https://www.google.com/maps?q=${encodeURIComponent(
               `${kontakty.nazevSkoly}, ${kontakty.adresa}`,
             )}&output=embed`}
-            className="min-h-[180px] w-full overflow-hidden rounded-karta border-0"
+            className="h-full min-h-[180px] w-full overflow-hidden rounded-karta border-0"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />
