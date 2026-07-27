@@ -139,7 +139,7 @@ const seed = async () => {
     slug: 'kontakty',
     data: {
       nazevSkoly: 'Mateřská škola U Jezérka Ratíškovice',
-      adresa: 'Ratíškovice',
+      adresa: 'U Jezérka 670, 696 02 Ratíškovice',
       provozniDoba: 'Po–Pá 6:30–16:00',
       email: 'msujezerka@seznam.cz',
       facebook: 'MŠ U Jezérka',

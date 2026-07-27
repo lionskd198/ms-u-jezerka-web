@@ -79,13 +79,26 @@ export default async function KontaktyStranka() {
           </div>
         </div>
 
-        {/* Místo pro mapu — šrafovaný vzor dle návrhu. Až budeš chtít
-            skutečnou mapu, sem přijde <iframe> z mapy.cz / Google Maps. */}
-        <div className="flex min-h-[180px] items-center justify-center overflow-hidden rounded-karta bg-[repeating-linear-gradient(45deg,var(--color-primary),var(--color-primary)_12px,var(--color-primary-tmava)_12px,var(--color-primary-tmava)_24px)]">
-          <div className="rounded-lg bg-white/90 px-4 py-2.5 font-mono text-[13px] text-primary-tmava">
-            zde vložit mapu
+        {/* Mapa — Google Maps embed nepotřebuje API klíč, stačí adresa
+            v URL. Bere se přímo z pole "Adresa" v administraci (Kontakty),
+            takže se automaticky aktualizuje, když adresu někdy změníš. */}
+        {kontakty.adresa ? (
+          <iframe
+            title="Mapa — poloha školky"
+            src={`https://www.google.com/maps?q=${encodeURIComponent(
+              `${kontakty.nazevSkoly}, ${kontakty.adresa}`,
+            )}&output=embed`}
+            className="min-h-[180px] w-full overflow-hidden rounded-karta border-0"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        ) : (
+          <div className="flex min-h-[180px] items-center justify-center overflow-hidden rounded-karta bg-[repeating-linear-gradient(45deg,var(--color-primary),var(--color-primary)_12px,var(--color-primary-tmava)_12px,var(--color-primary-tmava)_24px)]">
+            <div className="rounded-lg bg-white/90 px-4 py-2.5 font-mono text-[13px] text-primary-tmava">
+              zde vložit mapu
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* ===== Třídy a učitelky ===== */}
