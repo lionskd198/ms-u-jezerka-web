@@ -32,6 +32,15 @@ zerops:
       # Verze Node.js — musí sedět s tím, s čím byla služba založená.
       base: nodejs@24
 
+      # ⚠️ Proměnné přidané v Zerops GUI (S3_*, DATABASE_URI…) jsou dostupné
+      # až za BĚHU aplikace, ne během buildu! Bez tohohle by
+      # `npm run generate:importmap` neviděl, že je S3 plugin zapnutý
+      # (`pouzitS3Uloziste` v payload.config.ts), nezahrnul by jeho
+      # komponentu do importMap.js, a admin by za běhu spadl s chybou
+      # "PayloadComponent not found in importMap" — přesně tohle se stalo.
+      envVariables:
+        S3_BUCKET: ${storage_bucketName}
+
       buildCommands:
         # `--include=dev` je důležité: bez něj by se v produkčním prostředí
         # nenainstalovaly vývojové závislosti (typescript, tailwind, tsx…),
