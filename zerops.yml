@@ -79,9 +79,7 @@ zerops:
         # bezpečné migrace ze složky src/migrations (viz payload.config.ts).
         NODE_ENV: production
 
-      # ⚠️ DOČASNĚ (jednorázově): vyčistí staré záznamy médií/dokumentů
-      # vázané na starý lokální disk, seed je vytvoří znovu už v S3
-      # (viz payload.config.ts, pouzitS3Uloziste), a resetuje admin heslo
-      # (přihlášení hlásilo "incorrect password" — pravděpodobně uzamčený
-      # účet). Po ověření vrať zpět na `start: npm start`.
-      start: sh -c "npx tsx src/seed/pripravit-s3-migraci.ts && npm run seed && npx tsx src/seed/reset-heslo.ts martinkladnak@gmail.com && npm start"
+      # Soubory (obrázky, dokumenty) se od zapojení S3 Object Storage
+      # ukládají trvale mimo kontejner — seed při každém startu už
+      # není potřeba, žádný redeploy je nesmaže.
+      start: npm start
