@@ -79,10 +79,9 @@ zerops:
         # bezpečné migrace ze složky src/migrations (viz payload.config.ts).
         NODE_ENV: production
 
-      # ⚠️ DŮLEŽITÉ: kontejner nemá trvalý disk — při KAŽDÉM nasazení se
-      # nahrané soubory (fotky, dokumenty) ztratí, i když databáze si o nich
-      # pořád "pamatuje". Dokud nemáme S3/Object Storage (viz README, sekce
-      # Úložiště), spouštíme seed při každém startu, aby si aspoň známé
-      # (seedované) soubory samy obnovily. Nově nahrané soubory editorem
-      # ale tohle NEOCHRÁNÍ — ty se při dalším nasazení ztratí taky.
-      start: sh -c "npm run seed && npm start"
+      # ⚠️ DOČASNĚ (jednorázově): vyčistí staré záznamy médií/dokumentů
+      # vázané na starý lokální disk, seed je vytvoří znovu už v S3
+      # (viz payload.config.ts, pouzitS3Uloziste), a resetuje admin heslo
+      # (přihlášení hlásilo "incorrect password" — pravděpodobně uzamčený
+      # účet). Po ověření vrať zpět na `start: npm start`.
+      start: sh -c "npx tsx src/seed/pripravit-s3-migraci.ts && npm run seed && npx tsx src/seed/reset-heslo.ts martinkladnak@gmail.com && npm start"
