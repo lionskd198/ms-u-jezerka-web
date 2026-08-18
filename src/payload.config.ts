@@ -36,6 +36,7 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Dokumenty } from './collections/Dokumenty'
 import { Aktuality } from './collections/Aktuality'
+import { Trida } from './collections/Trida'
 import { ONas } from './globals/ONas'
 import { Kontakty } from './globals/Kontakty'
 // Databázové migrace — viz komentář u `prodMigrations` níže.
@@ -86,7 +87,7 @@ export default buildConfig({
   },
 
   // Registrace veškerého obsahu — pořadí zde = pořadí v menu administrace
-  collections: [Aktuality, Dokumenty, Media, Users],
+  collections: [Aktuality, Dokumenty, Trida, Media, Users],
   globals: [ONas, Kontakty],
 
   /**

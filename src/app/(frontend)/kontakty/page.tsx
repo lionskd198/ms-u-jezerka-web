@@ -10,6 +10,7 @@
  * telefonní číslo nebo nastoupí nová paní učitelka, upraví se to
  * v administraci a web se aktualizuje sám.
  */
+import Link from 'next/link'
 import { getPayload } from 'payload'
 import React from 'react'
 
@@ -26,6 +27,7 @@ export const metadata = {
 export default async function KontaktyStranka() {
   const payload = await getPayload({ config })
   const kontakty = await payload.findGlobal({ slug: 'kontakty' })
+  const tridy = await payload.find({ collection: 'tridy', sort: 'nazev', limit: 100 })
 
   return (
     <main className="mx-auto w-full max-w-[1000px] flex-1 px-7 pb-[90px] pt-14">
@@ -101,15 +103,16 @@ export default async function KontaktyStranka() {
         )}
       </div>
 
-      {/* ===== Třídy a učitelky ===== */}
-      {kontakty.tridy && kontakty.tridy.length > 0 && (
+      {/* ===== Třídy a učitelky (odkaz na vlastní stránku každé třídy) ===== */}
+      {tridy.docs.length > 0 && (
         <>
           <h2 className="mb-4 font-nadpisy text-[22px] font-bold">Třídy a učitelky</h2>
           <div className="mb-11 grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-5">
-            {kontakty.tridy.map((trida) => (
-              <div
+            {tridy.docs.map((trida) => (
+              <Link
                 key={trida.id}
-                className="rounded-karta bg-panel p-6 shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
+                href={`/tridy/${trida.slug}`}
+                className="block rounded-karta bg-panel p-6 shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-shadow hover:shadow-[0_8px_26px_rgba(0,0,0,0.1)]"
               >
                 <span aria-hidden className="mb-3.5 block h-10 w-10 rounded-full bg-akcent2" />
                 <div className="mb-1 font-nadpisy text-lg font-bold">{trida.nazev}</div>
@@ -119,7 +122,7 @@ export default async function KontaktyStranka() {
                 {trida.ucitelky && (
                   <div className="text-sm leading-relaxed">{trida.ucitelky}</div>
                 )}
-              </div>
+              </Link>
             ))}
           </div>
         </>

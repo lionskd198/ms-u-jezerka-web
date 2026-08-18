@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     aktuality: Aktualita;
     dokumenty: Dokument;
+    tridy: Trida;
     media: Media;
     users: User;
     'payload-kv': PayloadKv;
@@ -80,6 +81,7 @@ export interface Config {
   collectionsSelect: {
     aktuality: AktualitySelect<false> | AktualitySelect<true>;
     dokumenty: DokumentySelect<false> | DokumentySelect<true>;
+    tridy: TridySelect<false> | TridySelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -231,7 +233,7 @@ export interface Media {
   };
 }
 /**
- * Soubory ke stažení — řády, přihlášky, jídelníček… Web je zobrazí seskupené podle kategorií.
+ * Soubory ke stažení — řády, přihlášky, vzdělávací program… Web je zobrazí seskupené podle kategorií.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "dokumenty".
@@ -245,7 +247,7 @@ export interface Dokument {
   /**
    * Podle kategorie se dokumenty seskupují na stránce Dokumenty.
    */
-  kategorie: 'jidelnicek' | 'prihlasky-a-zapis' | 'rady-a-smernice' | 'vzdelavaci-program' | 'ostatni';
+  kategorie: 'prihlasky-a-zapis' | 'rady-a-smernice' | 'vzdelavaci-program' | 'ostatni';
   /**
    * Krátká poznámka pod názvem dokumentu na webu.
    */
@@ -261,6 +263,66 @@ export interface Dokument {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+}
+/**
+ * Jednotlivé třídy školky — každá má vlastní stránku s popisem a fotogaleriemi.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tridy".
+ */
+export interface Trida {
+  id: number;
+  nazev: string;
+  /**
+   * Vyplní se samo z názvu — část URL adresy, např. /tridy/berusky.
+   */
+  slug?: string | null;
+  /**
+   * Např. „3–4 roky".
+   */
+  vek?: string | null;
+  /**
+   * Jména oddělená čárkou.
+   */
+  ucitelky?: string | null;
+  /**
+   * Zobrazí se v seznamu tříd i v hlavičce vlastní stránky třídy.
+   */
+  logo?: (number | null) | Media;
+  /**
+   * Zobrazí se pod názvem třídy v seznamu tříd (na stránce /tridy).
+   */
+  popis?: string | null;
+  /**
+   * Delší text na vlastní stránce třídy — denní program, zaměření apod.
+   */
+  obsah?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Odkazy na fotky z akcí třídy (např. Rajče) — vždy název akce a odkaz, zobrazí se jako pěkný seznam na stránce třídy.
+   */
+  galerie?:
+    | {
+        nazevAkce: string;
+        odkaz: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Účty pro přístup do administrace. Role určuje, co kdo smí.
@@ -325,6 +387,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'dokumenty';
         value: number | Dokument;
+      } | null)
+    | ({
+        relationTo: 'tridy';
+        value: number | Trida;
       } | null)
     | ({
         relationTo: 'media';
@@ -413,6 +479,28 @@ export interface DokumentySelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tridy_select".
+ */
+export interface TridySelect<T extends boolean = true> {
+  nazev?: T;
+  slug?: T;
+  vek?: T;
+  ucitelky?: T;
+  logo?: T;
+  popis?: T;
+  obsah?: T;
+  galerie?:
+    | T
+    | {
+        nazevAkce?: T;
+        odkaz?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -609,14 +697,10 @@ export interface Kontakty {
         id?: string | null;
       }[]
     | null;
-  tridy?:
-    | {
-        nazev: string;
-        vek?: string | null;
-        ucitelky?: string | null;
-        id?: string | null;
-      }[]
-    | null;
+  /**
+   * Externí odkaz na jídelníček (např. web školní jídelny) — zobrazí se jako položka v hlavičce webu. Necháš-li prázdné, položka se v hlavičce nezobrazí.
+   */
+  odkazNaJidelnicek?: string | null;
   vedouci?: string | null;
   pedagogove?:
     | {
@@ -672,14 +756,7 @@ export interface KontaktySelect<T extends boolean = true> {
         cislo?: T;
         id?: T;
       };
-  tridy?:
-    | T
-    | {
-        nazev?: T;
-        vek?: T;
-        ucitelky?: T;
-        id?: T;
-      };
+  odkazNaJidelnicek?: T;
   vedouci?: T;
   pedagogove?:
     | T

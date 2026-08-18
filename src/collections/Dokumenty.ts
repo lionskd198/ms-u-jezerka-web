@@ -9,9 +9,9 @@
  *   3. web dokumenty automaticky zobrazí na stránce /dokumenty,
  *      seskupené podle kategorií, s odkazem ke stažení.
  *
- * Jídelníček je prostě dokument v kategorii "Jídelníček" — web ho zvýrazní
- * nahoře na stránce dokumentů. Když kuchařky vydají nový, editor jen nahraje
- * nový soubor a starý smaže (nebo nechá jako archiv).
+ * Jídelníček NENÍ dokument v téhle kolekci — je to externí odkaz
+ * (pole "Odkaz na jídelníček" v globalu Kontakty), protože ho spravuje
+ * jiná stránka (např. web školní jídelny).
  *
  * Dokumenty jdou navíc připojit k článku v Aktualitách (pole "Přílohy") —
  * třeba přihlášku k zápisu rovnou k článku o zápisu.
@@ -26,7 +26,6 @@ import { jePrihlasen, verejneCteni } from '../access'
  * Chceš-li přidat kategorii, stačí přidat řádek sem.
  */
 export const KATEGORIE_DOKUMENTU = [
-  { label: 'Jídelníček', value: 'jidelnicek' },
   { label: 'Přihlášky a zápis', value: 'prihlasky-a-zapis' },
   { label: 'Řády a směrnice', value: 'rady-a-smernice' },
   { label: 'Vzdělávací program', value: 'vzdelavaci-program' },
@@ -51,7 +50,7 @@ export const Dokumenty: CollectionConfig = {
     defaultColumns: ['nazev', 'kategorie', 'updatedAt'],
     group: 'Obsah',
     description:
-      'Soubory ke stažení — řády, přihlášky, jídelníček… Web je zobrazí seskupené podle kategorií.',
+      'Soubory ke stažení — řády, přihlášky, vzdělávací program… Web je zobrazí seskupené podle kategorií.',
   },
 
   access: {

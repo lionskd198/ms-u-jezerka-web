@@ -143,11 +143,6 @@ const seed = async () => {
       provozniDoba: 'Po–Pá 6:30–16:00',
       email: 'msujezerka@seznam.cz',
       facebook: 'MŠ U Jezérka',
-      tridy: [
-        { nazev: 'I. třída — Žabičky', vek: 'nejmladší děti', ucitelky: '' },
-        { nazev: 'II. třída — Želvičky', vek: 'prostřední třída', ucitelky: '' },
-        { nazev: 'III. třída — Rybičky', vek: 'předškoláci', ucitelky: '' },
-      ],
       telefony: [
         { popisek: 'Mateřská škola', cislo: '518 367 439' },
         { popisek: 'Mateřská škola (mobil)', cislo: '604 625 021' },
@@ -197,10 +192,10 @@ const seed = async () => {
       ),
     },
     {
-      nazev: 'Nový jídelníček ke stažení',
+      nazev: 'Nový školní řád ke stažení',
       typ: 'dokument' as const,
       obsah: odstavce(
-        'V sekci Dokumenty najdete aktuální jídelníček na tento týden. Jídelníček pravidelně obměňujeme.',
+        'V sekci Dokumenty najdete aktuální znění školního řádu — pravidelně ho podle potřeby aktualizujeme.',
       ),
     },
     {
@@ -279,6 +274,29 @@ const seed = async () => {
     })
   }
   payload.logger.info('✅ Ukázkové dokumenty nahrány.')
+
+  // ---------------------------------------------------------------------------
+  // KOLEKCE: Třídy — tři třídy školky, ať /tridy nevypadá prázdně. Editor si
+  // pak v administraci doplní logo, popis, obsah i odkazy na fotogalerie.
+  // ---------------------------------------------------------------------------
+  const UKAZKOVE_TRIDY = [
+    { nazev: 'I. třída — Žabičky', vek: 'nejmladší děti' },
+    { nazev: 'II. třída — Želvičky', vek: 'prostřední třída' },
+    { nazev: 'III. třída — Rybičky', vek: 'předškoláci' },
+  ]
+
+  for (const trida of UKAZKOVE_TRIDY) {
+    const existuje = await payload.find({
+      collection: 'tridy',
+      where: { nazev: { equals: trida.nazev } },
+      limit: 1,
+    })
+    if (existuje.totalDocs > 0) {
+      continue
+    }
+    await payload.create({ collection: 'tridy', data: trida })
+  }
+  payload.logger.info('✅ Ukázkové třídy zkontrolovány.')
 
   payload.logger.info('🎉 Hotovo! Databáze je naplněná.')
   // Local API drží připojení k databázi — proces musíme ukončit ručně.

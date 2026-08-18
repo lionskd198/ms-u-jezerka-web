@@ -74,6 +74,7 @@ const NAVIGACE = [
   { nazev: 'Úvod', cesta: '/' },
   { nazev: 'Aktuality', cesta: '/aktuality' },
   { nazev: 'Dokumenty', cesta: '/dokumenty' },
+  { nazev: 'Třídy', cesta: '/tridy' },
   { nazev: 'Kontakty', cesta: '/kontakty' },
 ]
 
@@ -130,6 +131,17 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
                   {polozka.nazev}
                 </Link>
               ))}
+              {/* Jídelníček — externí odkaz, zobrazí se jen když je v Kontaktech vyplněný */}
+              {kontakty.odkazNaJidelnicek && (
+                <a
+                  href={kontakty.odkazNaJidelnicek}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-karta px-4 py-2.5 text-base font-semibold text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+                >
+                  Jídelníček
+                </a>
+              )}
             </nav>
           </div>
         </header>

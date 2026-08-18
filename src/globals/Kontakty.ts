@@ -76,32 +76,13 @@ export const Kontakty: GlobalConfig = {
       ],
     },
     {
-      /**
-       * Třídy školky — zobrazují se jako karty na stránce Kontakty
-       * (název, věková skupina, učitelky).
-       */
-      name: 'tridy',
-      type: 'array',
-      label: 'Třídy',
-      labels: { singular: 'Třída', plural: 'Třídy' },
-      fields: [
-        {
-          name: 'nazev',
-          type: 'text',
-          label: 'Název třídy',
-          required: true,
-        },
-        {
-          name: 'vek',
-          type: 'text',
-          label: 'Věková skupina (např. „3–4 roky")',
-        },
-        {
-          name: 'ucitelky',
-          type: 'text',
-          label: 'Učitelky (jména oddělená čárkou)',
-        },
-      ],
+      name: 'odkazNaJidelnicek',
+      type: 'text',
+      label: 'Odkaz na jídelníček',
+      admin: {
+        description:
+          'Externí odkaz na jídelníček (např. web školní jídelny) — zobrazí se jako položka v hlavičce webu. Necháš-li prázdné, položka se v hlavičce nezobrazí.',
+      },
     },
     {
       name: 'vedouci',
