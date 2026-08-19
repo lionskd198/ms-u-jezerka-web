@@ -73,10 +73,9 @@ export const metadata: Metadata = {
 const NAVIGACE = [
   { nazev: 'Úvod', cesta: '/' },
   { nazev: 'Aktuality', cesta: '/aktuality' },
-  { nazev: 'Dokumenty', cesta: '/dokumenty' },
   { nazev: 'Třídy', cesta: '/tridy' },
+  { nazev: 'Dokumenty', cesta: '/dokumenty' },
   { nazev: 'Fotografie', cesta: '/fotografie' },
-  { nazev: 'Kontakty', cesta: '/kontakty' },
 ]
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
@@ -143,6 +142,12 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
                   Jídelníček
                 </a>
               )}
+              <Link
+                href="/kontakty"
+                className="rounded-karta px-4 py-2.5 text-base font-semibold text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+              >
+                Kontakty
+              </Link>
             </nav>
           </div>
         </header>
