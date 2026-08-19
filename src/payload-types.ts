@@ -70,6 +70,7 @@ export interface Config {
     aktuality: Aktualita;
     dokumenty: Dokument;
     tridy: Trida;
+    fotografie: Fotografie;
     media: Media;
     users: User;
     'payload-kv': PayloadKv;
@@ -82,6 +83,7 @@ export interface Config {
     aktuality: AktualitySelect<false> | AktualitySelect<true>;
     dokumenty: DokumentySelect<false> | DokumentySelect<true>;
     tridy: TridySelect<false> | TridySelect<true>;
+    fotografie: FotografieSelect<false> | FotografieSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -281,10 +283,12 @@ export interface Trida {
    * Např. „3–4 roky".
    */
   vek?: string | null;
-  /**
-   * Jména oddělená čárkou.
-   */
-  ucitelky?: string | null;
+  ucitelky?:
+    | {
+        jmeno: string;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Zobrazí se v seznamu tříd i v hlavičce vlastní stránky třídy.
    */
@@ -311,16 +315,27 @@ export interface Trida {
     };
     [k: string]: unknown;
   } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Odkazy na fotogalerie z akcí — volitelně přiřazené ke třídě.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "fotografie".
+ */
+export interface Fotografie {
+  id: number;
+  nazevAkce: string;
   /**
-   * Odkazy na fotky z akcí třídy (např. Rajče) — vždy název akce a odkaz, zobrazí se jako pěkný seznam na stránce třídy.
+   * Nepovinné — bez přiřazené třídy se fotky zobrazí jen na stránce Fotografie, s třídou i na její vlastní stránce.
    */
-  galerie?:
-    | {
-        nazevAkce: string;
-        odkaz: string;
-        id?: string | null;
-      }[]
-    | null;
+  trida?: (number | null) | Trida;
+  /**
+   * Krátký popis k akci (nepovinné).
+   */
+  text?: string | null;
+  odkaz: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -391,6 +406,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'tridy';
         value: number | Trida;
+      } | null)
+    | ({
+        relationTo: 'fotografie';
+        value: number | Fotografie;
       } | null)
     | ({
         relationTo: 'media';
@@ -488,17 +507,27 @@ export interface TridySelect<T extends boolean = true> {
   nazev?: T;
   slug?: T;
   vek?: T;
-  ucitelky?: T;
+  ucitelky?:
+    | T
+    | {
+        jmeno?: T;
+        id?: T;
+      };
   logo?: T;
   popis?: T;
   obsah?: T;
-  galerie?:
-    | T
-    | {
-        nazevAkce?: T;
-        odkaz?: T;
-        id?: T;
-      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "fotografie_select".
+ */
+export interface FotografieSelect<T extends boolean = true> {
+  nazevAkce?: T;
+  trida?: T;
+  text?: T;
+  odkaz?: T;
   updatedAt?: T;
   createdAt?: T;
 }

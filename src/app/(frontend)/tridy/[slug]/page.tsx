@@ -4,7 +4,8 @@
  * =============================================================================
  *
  * Logo, název, věková skupina, učitelky, delší text a odkazy na fotogalerie
- * z akcí třídy (vždy název akce + odkaz, dle vzoru přílohy u Aktualit).
+ * z akcí třídy — ty se načítají zvlášť z kolekce Fotografie (záznamy
+ * přiřazené k téhle třídě), ne z pole na Trida.
  */
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { Metadata } from 'next'
@@ -59,6 +60,14 @@ export default async function DetailTridy({
 
   const logo = typeof trida.logo === 'object' ? trida.logo : null
 
+  const payload = await getPayload({ config })
+  const fotografie = await payload.find({
+    collection: 'fotografie',
+    where: { trida: { equals: trida.id } },
+    sort: '-createdAt',
+    limit: 50,
+  })
+
   return (
     <main className="mx-auto w-full max-w-[900px] flex-1 px-7 pb-[90px] pt-14">
       <Link
@@ -75,10 +84,10 @@ export default async function DetailTridy({
           <img
             src={logo.sizes?.karta?.url ?? logo.url}
             alt={logo.alt}
-            className="h-20 w-20 rounded-full object-cover"
+            className="h-28 w-auto max-w-[220px] rounded-karta object-contain"
           />
         ) : (
-          <span aria-hidden className="block h-20 w-20 shrink-0 rounded-full bg-akcent2" />
+          <span aria-hidden className="block h-28 w-28 shrink-0 rounded-karta bg-akcent2" />
         )}
         <div>
           <h1 className="font-nadpisy text-[clamp(28px,4vw,38px)] font-extrabold leading-[1.2]">
@@ -88,9 +97,10 @@ export default async function DetailTridy({
         </div>
       </div>
 
-      {trida.ucitelky && (
+      {trida.ucitelky && trida.ucitelky.length > 0 && (
         <p className="mb-6 text-[15px]">
-          <span className="font-bold">Učitelky:</span> {trida.ucitelky}
+          <span className="font-bold">Učitelky:</span>{' '}
+          {trida.ucitelky.map((u) => u.jmeno).join(', ')}
         </p>
       )}
 
@@ -103,14 +113,14 @@ export default async function DetailTridy({
         </div>
       )}
 
-      {/* ===== Fotogalerie z akcí (název akce + odkaz) ===== */}
-      {trida.galerie && trida.galerie.length > 0 && (
+      {/* ===== Fotogalerie z akcí (z kolekce Fotografie, název akce + odkaz) ===== */}
+      {fotografie.docs.length > 0 && (
         <section className="mt-8 rounded-karta border border-black/5 bg-panel p-6 shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
           <h2 className="mb-3.5 font-nadpisy text-[19px] font-bold text-primary">
             Fotogalerie z akcí
           </h2>
           <ul className="space-y-2.5">
-            {trida.galerie.map((polozka) => (
+            {fotografie.docs.map((polozka) => (
               <li key={polozka.id}>
                 <a
                   href={polozka.odkaz}
@@ -118,8 +128,9 @@ export default async function DetailTridy({
                   rel="noopener noreferrer"
                   className="font-bold text-primary hover:underline"
                 >
-                  📷 {polozka.nazevAkce} ↗
+                  {polozka.nazevAkce}
                 </a>
+                {polozka.text && <p className="text-sm text-tlumena">{polozka.text}</p>}
               </li>
             ))}
           </ul>

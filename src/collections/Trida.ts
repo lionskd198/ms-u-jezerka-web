@@ -4,7 +4,8 @@
  * =============================================================================
  *
  * Každá třída má vlastní veřejnou stránku (/tridy/nazev-tridy) s logem,
- * popisem, volným textem a odkazy na fotogalerie z akcí (např. Rajče).
+ * popisem a volným textem. Fotogalerie z akcí třídy nejsou tady — vedou se
+ * v samostatné kolekci Fotografie (pole "trida" tam odkazuje zpátky sem).
  * Stejná data (název, věk, učitelky) se používají i na stránce Kontakty
  * v sekci „Třídy a učitelky" — ta teď na jednotlivé třídy odkazuje.
  *
@@ -93,12 +94,20 @@ export const Trida: CollectionConfig = {
     },
     {
       name: 'ucitelky',
-      type: 'text',
+      type: 'array',
       label: 'Učitelky',
+      labels: { singular: 'Učitelka', plural: 'Učitelky' },
       admin: {
         position: 'sidebar',
-        description: 'Jména oddělená čárkou.',
       },
+      fields: [
+        {
+          name: 'jmeno',
+          type: 'text',
+          label: 'Jméno',
+          required: true,
+        },
+      ],
     },
     {
       name: 'logo',
@@ -124,30 +133,6 @@ export const Trida: CollectionConfig = {
       admin: {
         description: 'Delší text na vlastní stránce třídy — denní program, zaměření apod.',
       },
-    },
-    {
-      name: 'galerie',
-      type: 'array',
-      label: 'Fotogalerie z akcí',
-      labels: { singular: 'Odkaz na fotogalerii', plural: 'Odkazy na fotogalerie' },
-      admin: {
-        description:
-          'Odkazy na fotky z akcí třídy (např. Rajče) — vždy název akce a odkaz, zobrazí se jako pěkný seznam na stránce třídy.',
-      },
-      fields: [
-        {
-          name: 'nazevAkce',
-          type: 'text',
-          label: 'Název akce',
-          required: true,
-        },
-        {
-          name: 'odkaz',
-          type: 'text',
-          label: 'Odkaz na fotogalerii',
-          required: true,
-        },
-      ],
     },
   ],
 }

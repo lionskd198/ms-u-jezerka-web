@@ -27,7 +27,7 @@ export const metadata = {
 export default async function KontaktyStranka() {
   const payload = await getPayload({ config })
   const kontakty = await payload.findGlobal({ slug: 'kontakty' })
-  const tridy = await payload.find({ collection: 'tridy', sort: 'nazev', limit: 100 })
+  const tridy = await payload.find({ collection: 'tridy', sort: 'nazev', limit: 100, depth: 1 })
 
   return (
     <main className="mx-auto w-full max-w-[1000px] flex-1 px-7 pb-[90px] pt-14">
@@ -108,22 +108,36 @@ export default async function KontaktyStranka() {
         <>
           <h2 className="mb-4 font-nadpisy text-[22px] font-bold">Třídy a učitelky</h2>
           <div className="mb-11 grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-5">
-            {tridy.docs.map((trida) => (
-              <Link
-                key={trida.id}
-                href={`/tridy/${trida.slug}`}
-                className="block rounded-karta bg-panel p-6 shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-shadow hover:shadow-[0_8px_26px_rgba(0,0,0,0.1)]"
-              >
-                <span aria-hidden className="mb-3.5 block h-10 w-10 rounded-full bg-akcent2" />
-                <div className="mb-1 font-nadpisy text-lg font-bold">{trida.nazev}</div>
-                {trida.vek && (
-                  <div className="mb-3 text-[13px] font-semibold text-tlumena">{trida.vek}</div>
-                )}
-                {trida.ucitelky && (
-                  <div className="text-sm leading-relaxed">{trida.ucitelky}</div>
-                )}
-              </Link>
-            ))}
+            {tridy.docs.map((trida) => {
+              const logo = typeof trida.logo === 'object' ? trida.logo : null
+              return (
+                <Link
+                  key={trida.id}
+                  href={`/tridy/${trida.slug}`}
+                  className="block rounded-karta bg-panel p-6 shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-shadow hover:shadow-[0_8px_26px_rgba(0,0,0,0.1)]"
+                >
+                  {logo?.url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={logo.sizes?.karta?.url ?? logo.url}
+                      alt={logo.alt}
+                      className="mb-3.5 h-16 w-auto max-w-[160px] rounded-karta object-contain"
+                    />
+                  ) : (
+                    <span aria-hidden className="mb-3.5 block h-16 w-16 rounded-karta bg-akcent2" />
+                  )}
+                  <div className="mb-1 font-nadpisy text-lg font-bold">{trida.nazev}</div>
+                  {trida.vek && (
+                    <div className="mb-3 text-[13px] font-semibold text-tlumena">{trida.vek}</div>
+                  )}
+                  {trida.ucitelky && trida.ucitelky.length > 0 && (
+                    <div className="text-sm leading-relaxed">
+                      {trida.ucitelky.map((u) => u.jmeno).join(', ')}
+                    </div>
+                  )}
+                </Link>
+              )
+            })}
           </div>
         </>
       )}

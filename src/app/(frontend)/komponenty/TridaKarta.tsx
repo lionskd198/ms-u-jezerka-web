@@ -18,12 +18,12 @@ export function TridaKarta({ trida }: { trida: Trida }) {
       {logo?.url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={logo.sizes?.nahled?.url ?? logo.url}
+          src={logo.sizes?.karta?.url ?? logo.url}
           alt={logo.alt}
-          className="mb-3.5 h-14 w-14 rounded-full object-cover"
+          className="mb-3.5 h-16 w-auto max-w-[160px] rounded-karta object-contain"
         />
       ) : (
-        <span aria-hidden className="mb-3.5 block h-14 w-14 rounded-full bg-akcent2" />
+        <span aria-hidden className="mb-3.5 block h-16 w-16 rounded-karta bg-akcent2" />
       )}
       <div className="mb-1 font-nadpisy text-lg font-bold">{trida.nazev}</div>
       {trida.vek && <div className="mb-2.5 text-[13px] font-semibold text-tlumena">{trida.vek}</div>}

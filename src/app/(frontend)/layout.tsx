@@ -75,6 +75,7 @@ const NAVIGACE = [
   { nazev: 'Aktuality', cesta: '/aktuality' },
   { nazev: 'Dokumenty', cesta: '/dokumenty' },
   { nazev: 'Třídy', cesta: '/tridy' },
+  { nazev: 'Fotografie', cesta: '/fotografie' },
   { nazev: 'Kontakty', cesta: '/kontakty' },
 ]
 

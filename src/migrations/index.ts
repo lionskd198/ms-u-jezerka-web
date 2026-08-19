@@ -3,6 +3,7 @@ import * as migration_20260721_181650_pridat_o_nas_text_a_fotografie from './202
 import * as migration_20260722_151051_odebrat_statistiky_pridat_hero_obrazek from './20260722_151051_odebrat_statistiky_pridat_hero_obrazek';
 import * as migration_20260722_152723_pridat_odkaz_na_galerii from './20260722_152723_pridat_odkaz_na_galerii';
 import * as migration_20260816_174359_pridat_tridy_odebrat_jidelnicek from './20260816_174359_pridat_tridy_odebrat_jidelnicek';
+import * as migration_20260819_180453_pridat_fotografie_ucitelky_pole from './20260819_180453_pridat_fotografie_ucitelky_pole';
 
 export const migrations = [
   {
@@ -29,5 +30,10 @@ export const migrations = [
     up: migration_20260816_174359_pridat_tridy_odebrat_jidelnicek.up,
     down: migration_20260816_174359_pridat_tridy_odebrat_jidelnicek.down,
     name: '20260816_174359_pridat_tridy_odebrat_jidelnicek',
+  },
+  {
+    up: migration_20260819_180453_pridat_fotografie_ucitelky_pole.up,
+    down: migration_20260819_180453_pridat_fotografie_ucitelky_pole.down,
+    name: '20260819_180453_pridat_fotografie_ucitelky_pole',
   },
 ];
