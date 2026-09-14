@@ -13,6 +13,7 @@
 import type { MetadataRoute } from 'next'
 import { getPayload } from 'payload'
 
+import { verejnyDotazAktuality } from '@/collections/Aktuality'
 import config from '@/payload.config'
 
 const ADRESA_WEBU = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
@@ -30,13 +31,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const statickeStranky: MetadataRoute.Sitemap = [
     { url: `${ADRESA_WEBU}/`, changeFrequency: 'weekly', priority: 1 },
     { url: `${ADRESA_WEBU}/aktuality`, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${ADRESA_WEBU}/tridy`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${ADRESA_WEBU}/dokumenty`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${ADRESA_WEBU}/fotografie`, changeFrequency: 'weekly', priority: 0.6 },
+    { url: `${ADRESA_WEBU}/projekty`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${ADRESA_WEBU}/kontakty`, changeFrequency: 'monthly', priority: 0.7 },
   ]
 
-  // Všechny publikované aktuality
+  // Všechny veřejně viditelné aktuality (publikované, s platnou platností)
   const aktuality = await payload.find({
     collection: 'aktuality',
+    where: verejnyDotazAktuality(),
     limit: 500,
     sort: '-publishedAt',
   })
@@ -48,5 +53,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  return [...statickeStranky, ...clanky]
+  // Jednotlivé třídy
+  const tridy = await payload.find({
+    collection: 'tridy',
+    limit: 100,
+  })
+
+  const strankyTrid: MetadataRoute.Sitemap = tridy.docs.map((trida) => ({
+    url: `${ADRESA_WEBU}/tridy/${trida.slug}`,
+    lastModified: trida.updatedAt,
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }))
+
+  return [...statickeStranky, ...clanky, ...strankyTrid]
 }

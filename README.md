@@ -105,8 +105,10 @@ ale i *proč* a jaký koncept Payloadu se v něm používá.
   publikované aktuality, robots blokuje `/admin` a `/api`.
 - **Strukturovaná data** (JSON-LD, typ *Preschool*) — v layoutu, z globalu
   Kontakty.
-- Na produkci nastav `NEXT_PUBLIC_SERVER_URL` na skutečnou doménu — používá
-  se v sitemap, OG tazích, CORS i CSRF.
+- `NEXT_PUBLIC_SERVER_URL` (skutečná doména) je napevno v `zerops.yml` —
+  používá se v sitemap, OG tazích, CORS i CSRF. Zapékat se musí už do
+  buildu (viz komentář v `zerops.yml`), proto NENÍ v Zerops GUI, ale přímo
+  v souboru — po změně domény uprav `zerops.yml` a znovu nasaď.
 
 ## Cookies
 
@@ -171,10 +173,10 @@ založení od nuly někde jinde).
 | --- | --- |
 | `DATABASE_URI` | `${postgresql_connectionString}/${postgresql_dbName}` |
 | `PAYLOAD_SECRET` | vygenerovaný náhodný řetězec (jako lokální v `.env`), ideálně jako **Secret** |
-| `NEXT_PUBLIC_SERVER_URL` | veřejná adresa (`https://nodejs-<tvoje-subdoména>-3000.prg1.zerops.app`, nebo vlastní doména) |
 
-`NEXT_PUBLIC_*` proměnné Next.js zapéká už při buildu — musí tam být
-před pushem, ne až po něm.
+`NEXT_PUBLIC_SERVER_URL` v GUI nastavovat nemusíš — je napevno v
+`zerops.yml` (skutečná doména), protože `NEXT_PUBLIC_*` proměnné Next.js
+zapéká už při buildu a proměnné z GUI tou dobou ještě nejsou dostupné.
 
 Nasazení:
 

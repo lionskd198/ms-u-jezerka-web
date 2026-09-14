@@ -71,6 +71,7 @@ export interface Config {
     dokumenty: Dokument;
     tridy: Trida;
     fotografie: Fotografie;
+    projekty: Projekt;
     media: Media;
     users: User;
     'payload-kv': PayloadKv;
@@ -84,6 +85,7 @@ export interface Config {
     dokumenty: DokumentySelect<false> | DokumentySelect<true>;
     tridy: TridySelect<false> | TridySelect<true>;
     fotografie: FotografieSelect<false> | FotografieSelect<true>;
+    projekty: ProjektySelect<false> | ProjektySelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -180,6 +182,10 @@ export interface Aktualita {
    * Podle tohoto data se aktuality řadí na webu (nejnovější první).
    */
   publishedAt?: string | null;
+  /**
+   * Po tomto datu se aktualita na webu přestane zobrazovat (výpis, detail, sitemapa). Zůstane uložená a jde ji kdykoli prodloužit nebo smazat datum úplně. Necháš-li prázdné, platí bez omezení.
+   */
+  platnostDo?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -315,6 +321,17 @@ export interface Trida {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Fotky s nadpisem a popisem na stránce třídy — zobrazí se střídavě fotka vlevo/vpravo.
+   */
+  fotky?:
+    | {
+        obrazek: number | Media;
+        nadpis?: string | null;
+        popis?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -336,6 +353,23 @@ export interface Fotografie {
    */
   text?: string | null;
   odkaz: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Projekty, do kterých je školka dlouhodobě zapojená (např. Recyklohraní).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projekty".
+ */
+export interface Projekt {
+  id: number;
+  nazev: string;
+  /**
+   * Pár vět o tom, o co v projektu jde.
+   */
+  popis?: string | null;
+  obrazek?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -412,6 +446,10 @@ export interface PayloadLockedDocument {
         value: number | Fotografie;
       } | null)
     | ({
+        relationTo: 'projekty';
+        value: number | Projekt;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
@@ -475,6 +513,7 @@ export interface AktualitySelect<T extends boolean = true> {
   obsah?: T;
   prilohy?: T;
   publishedAt?: T;
+  platnostDo?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -516,6 +555,14 @@ export interface TridySelect<T extends boolean = true> {
   logo?: T;
   popis?: T;
   obsah?: T;
+  fotky?:
+    | T
+    | {
+        obrazek?: T;
+        nadpis?: T;
+        popis?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -528,6 +575,17 @@ export interface FotografieSelect<T extends boolean = true> {
   trida?: T;
   text?: T;
   odkaz?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projekty_select".
+ */
+export interface ProjektySelect<T extends boolean = true> {
+  nazev?: T;
+  popis?: T;
+  obrazek?: T;
   updatedAt?: T;
   createdAt?: T;
 }

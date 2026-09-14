@@ -113,6 +113,41 @@ export default async function DetailTridy({
         </div>
       )}
 
+      {/* ===== Fotky ze třídy — střídavé bloky (fotka jednou vlevo, jednou vpravo) ===== */}
+      {trida.fotky && trida.fotky.length > 0 && (
+        <section className="mt-10 flex flex-col gap-10">
+          {trida.fotky.map((polozka, index) => {
+            const obrazek = typeof polozka.obrazek === 'object' ? polozka.obrazek : null
+            if (!obrazek?.url) return null
+            const zprava = index % 2 === 1
+
+            return (
+              <div
+                key={polozka.id}
+                className={`flex flex-col items-center gap-6 sm:flex-row ${
+                  zprava ? 'sm:flex-row-reverse' : ''
+                }`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={obrazek.sizes?.karta?.url ?? obrazek.url}
+                  alt={obrazek.alt}
+                  className="aspect-[4/3] w-full max-w-[320px] shrink-0 rounded-karta object-cover shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
+                />
+                <div className="flex-1">
+                  {polozka.nadpis && (
+                    <h3 className="mb-2 font-nadpisy text-xl font-bold text-primary">
+                      {polozka.nadpis}
+                    </h3>
+                  )}
+                  {polozka.popis && <p className="text-tlumena">{polozka.popis}</p>}
+                </div>
+              </div>
+            )
+          })}
+        </section>
+      )}
+
       {/* ===== Fotogalerie z akcí (z kolekce Fotografie, název akce + odkaz) ===== */}
       {fotografie.docs.length > 0 && (
         <section className="mt-8 rounded-karta border border-black/5 bg-panel p-6 shadow-[0_4px_16px_rgba(0,0,0,0.06)]">

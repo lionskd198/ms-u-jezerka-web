@@ -23,8 +23,10 @@
 # Git Integration) — pak se nasadí automaticky při každém "git push".
 #
 # Předtím, než poprvé pushneš, musí mít služba "nodejs" v Zerops GUI
-# (Environment Variables) nastavené: DATABASE_URI, PAYLOAD_SECRET,
-# NEXT_PUBLIC_SERVER_URL — viz README.md, sekce Nasazení na Zerops.
+# (Environment Variables) nastavené: DATABASE_URI, PAYLOAD_SECRET
+# — viz README.md, sekce Nasazení na Zerops. (NEXT_PUBLIC_SERVER_URL je
+# napevno v tomto souboru níže, viz komentář u ní — v GUI ji nastavovat
+# nemusíš.)
 
 zerops:
   - setup: nodejs
@@ -38,8 +40,17 @@ zerops:
       # (`pouzitS3Uloziste` v payload.config.ts), nezahrnul by jeho
       # komponentu do importMap.js, a admin by za běhu spadl s chybou
       # "PayloadComponent not found in importMap" — přesně tohle se stalo.
+      #
+      # NEXT_PUBLIC_SERVER_URL musí být dostupná i tady (ne jen v run části
+      # níže) — jinak se do staticky generovaných souborů jako /robots.txt
+      # natvrdo zapíše záložní hodnota "http://localhost:3000" (přesně
+      # tohle se stalo, sitemap odkaz v robots.txt ukazoval na localhost).
+      # Skutečná doména webu není tajná, proto je v pořádku mít ji tady
+      # napevno místo v Zerops GUI — a nehrozí, že se v GUI zapomene
+      # aktualizovat po připojení vlastní domény.
       envVariables:
         S3_BUCKET: ${storage_bucketName}
+        NEXT_PUBLIC_SERVER_URL: https://msujezerkaratiskovice.cz
 
       buildCommands:
         # `--include=dev` je důležité: bez něj by se v produkčním prostředí
@@ -87,6 +98,9 @@ zerops:
         # automatický "push" schématu databáze a použijí se místo něj
         # bezpečné migrace ze složky src/migrations (viz payload.config.ts).
         NODE_ENV: production
+        # I za běhu (Payload serverURL/CORS/CSRF, sitemap.xml, canonical
+        # odkazy) — viz komentář u stejné proměnné v build části výše.
+        NEXT_PUBLIC_SERVER_URL: https://msujezerkaratiskovice.cz
 
       # Soubory (obrázky, dokumenty) se od zapojení S3 Object Storage
       # ukládají trvale mimo kontejner — seed při každém startu už

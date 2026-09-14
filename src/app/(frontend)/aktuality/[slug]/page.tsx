@@ -17,6 +17,7 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import React from 'react'
 
+import { verejnyDotazAktuality } from '@/collections/Aktuality'
 import type { Aktualita } from '@/payload-types'
 import config from '@/payload.config'
 
@@ -25,12 +26,16 @@ import { StitekTypu } from '../../komponenty/StitekTypu'
 
 export const dynamic = 'force-dynamic'
 
-/** Najde článek podle slugu (sdílí ho stránka i generateMetadata níže). */
+/**
+ * Najde článek podle slugu (sdílí ho stránka i generateMetadata níže).
+ * Kromě slugu musí splňovat i `verejnyDotazAktuality` — jinak by šel
+ * neplatný/koncepní článek dohledat přímo přes URL i po vypršení platnosti.
+ */
 const najdiAktualitu = async (slug: string) => {
   const payload = await getPayload({ config })
   const vysledek = await payload.find({
     collection: 'aktuality',
-    where: { slug: { equals: slug } },
+    where: { and: [verejnyDotazAktuality(), { slug: { equals: slug } }] },
     depth: 2,
     limit: 1,
   })

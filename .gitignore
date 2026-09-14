@@ -43,3 +43,6 @@ next-env.d.ts
 # nahrané soubory (obrázky a dokumenty z administrace)
 /media
 /dokumenty
+
+# lokální zálohy databáze (obsahují citlivá produkční data)
+/db-backup

@@ -23,6 +23,8 @@ import React from 'react'
 import config from '@/payload.config'
 import './styles.css'
 
+import { Navigace } from './komponenty/Navigace'
+
 /** Veřejná adresa webu (pro SEO tagy) — z .env, na produkci skutečná doména. */
 const ADRESA_WEBU = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
@@ -76,6 +78,7 @@ const NAVIGACE = [
   { nazev: 'Třídy', cesta: '/tridy' },
   { nazev: 'Dokumenty', cesta: '/dokumenty' },
   { nazev: 'Fotografie', cesta: '/fotografie' },
+  { nazev: 'Projekty', cesta: '/projekty' },
 ]
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
@@ -121,34 +124,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
                 MŠ U Jezérka
               </span>
             </Link>
-            <nav className="flex flex-wrap gap-1.5">
-              {NAVIGACE.map((polozka) => (
-                <Link
-                  key={polozka.cesta}
-                  href={polozka.cesta}
-                  className="rounded-karta px-4 py-2.5 text-base font-semibold text-white/80 transition-colors hover:bg-white/15 hover:text-white"
-                >
-                  {polozka.nazev}
-                </Link>
-              ))}
-              {/* Jídelníček — externí odkaz, zobrazí se jen když je v Kontaktech vyplněný */}
-              {kontakty.odkazNaJidelnicek && (
-                <a
-                  href={kontakty.odkazNaJidelnicek}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-karta px-4 py-2.5 text-base font-semibold text-white/80 transition-colors hover:bg-white/15 hover:text-white"
-                >
-                  Jídelníček
-                </a>
-              )}
-              <Link
-                href="/kontakty"
-                className="rounded-karta px-4 py-2.5 text-base font-semibold text-white/80 transition-colors hover:bg-white/15 hover:text-white"
-              >
-                Kontakty
-              </Link>
-            </nav>
+            <Navigace polozky={NAVIGACE} odkazNaJidelnicek={kontakty.odkazNaJidelnicek} />
           </div>
         </header>
 

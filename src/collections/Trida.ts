@@ -134,5 +134,41 @@ export const Trida: CollectionConfig = {
         description: 'Delší text na vlastní stránce třídy — denní program, zaměření apod.',
       },
     },
+    {
+      /**
+       * Fotky s vlastním nadpisem a popisem — na stránce třídy se zobrazí
+       * jako střídavé bloky (fotka jednou vlevo, jednou vpravo).
+       */
+      name: 'fotky',
+      type: 'array',
+      label: 'Fotky ze třídy',
+      labels: {
+        singular: 'Fotka',
+        plural: 'Fotky',
+      },
+      admin: {
+        description:
+          'Fotky s nadpisem a popisem na stránce třídy — zobrazí se střídavě fotka vlevo/vpravo.',
+      },
+      fields: [
+        {
+          name: 'obrazek',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+          label: 'Obrázek',
+        },
+        {
+          name: 'nadpis',
+          type: 'text',
+          label: 'Nadpis',
+        },
+        {
+          name: 'popis',
+          type: 'textarea',
+          label: 'Popis',
+        },
+      ],
+    },
   ],
 }

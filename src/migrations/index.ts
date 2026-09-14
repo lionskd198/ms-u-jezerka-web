@@ -4,6 +4,8 @@ import * as migration_20260722_151051_odebrat_statistiky_pridat_hero_obrazek fro
 import * as migration_20260722_152723_pridat_odkaz_na_galerii from './20260722_152723_pridat_odkaz_na_galerii';
 import * as migration_20260816_174359_pridat_tridy_odebrat_jidelnicek from './20260816_174359_pridat_tridy_odebrat_jidelnicek';
 import * as migration_20260819_180453_pridat_fotografie_ucitelky_pole from './20260819_180453_pridat_fotografie_ucitelky_pole';
+import * as migration_20260831_163524_pridat_projekty_a_fotky_trid from './20260831_163524_pridat_projekty_a_fotky_trid';
+import * as migration_20260907_151737_pridat_platnost_aktualitam from './20260907_151737_pridat_platnost_aktualitam';
 
 export const migrations = [
   {
@@ -24,7 +26,7 @@ export const migrations = [
   {
     up: migration_20260722_152723_pridat_odkaz_na_galerii.up,
     down: migration_20260722_152723_pridat_odkaz_na_galerii.down,
-    name: '20260722_152723_pridat_odkaz_na_galerii'
+    name: '20260722_152723_pridat_odkaz_na_galerii',
   },
   {
     up: migration_20260816_174359_pridat_tridy_odebrat_jidelnicek.up,
@@ -35,5 +37,15 @@ export const migrations = [
     up: migration_20260819_180453_pridat_fotografie_ucitelky_pole.up,
     down: migration_20260819_180453_pridat_fotografie_ucitelky_pole.down,
     name: '20260819_180453_pridat_fotografie_ucitelky_pole',
+  },
+  {
+    up: migration_20260831_163524_pridat_projekty_a_fotky_trid.up,
+    down: migration_20260831_163524_pridat_projekty_a_fotky_trid.down,
+    name: '20260831_163524_pridat_projekty_a_fotky_trid',
+  },
+  {
+    up: migration_20260907_151737_pridat_platnost_aktualitam.up,
+    down: migration_20260907_151737_pridat_platnost_aktualitam.down,
+    name: '20260907_151737_pridat_platnost_aktualitam'
   },
 ];

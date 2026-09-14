@@ -38,6 +38,7 @@ import { Dokumenty } from './collections/Dokumenty'
 import { Aktuality } from './collections/Aktuality'
 import { Trida } from './collections/Trida'
 import { Fotografie } from './collections/Fotografie'
+import { Projekty } from './collections/Projekty'
 import { ONas } from './globals/ONas'
 import { Kontakty } from './globals/Kontakty'
 // Databázové migrace — viz komentář u `prodMigrations` níže.
@@ -68,6 +69,18 @@ const dirname = path.dirname(filename)
  */
 const pouzitS3Uloziste = Boolean(process.env.S3_BUCKET)
 
+/**
+ * Adresa webu z .env (bez, nebo s "www", podle toho, co je nastavené) +
+ * její doplněk (druhá varianta). Web totiž běží na obou variantách domény
+ * (s www i bez www) a bez téhle druhé varianty by přihlášení do
+ * administrace z té "nenastavené" varianty spadlo na chybě CORS/CSRF
+ * (Origin prohlížeče by neodpovídal ničemu z povoleného seznamu).
+ */
+const adresaWebu = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+const adresaWebuBezWww = adresaWebu.replace('://www.', '://')
+const adresaWebuSWww = adresaWebuBezWww.replace('://', '://www.')
+const povoleneAdresy = Array.from(new Set([adresaWebu, adresaWebuBezWww, adresaWebuSWww]))
+
 export default buildConfig({
   admin: {
     // Kolekce, jejíž uživatelé se smí přihlásit do administrace.
@@ -88,7 +101,7 @@ export default buildConfig({
   },
 
   // Registrace veškerého obsahu — pořadí zde = pořadí v menu administrace
-  collections: [Aktuality, Dokumenty, Trida, Fotografie, Media, Users],
+  collections: [Aktuality, Dokumenty, Trida, Fotografie, Projekty, Media, Users],
   globals: [ONas, Kontakty],
 
   /**
@@ -163,15 +176,20 @@ export default buildConfig({
    * CORS = které cizí weby smí volat naše API z prohlížeče.
    * Povolujeme jen náš vlastní web — žádná cizí stránka tak nemůže
    * z prohlížeče návštěvníka volat naše API.
+   *
+   * Web je dostupný jak bez "www", tak s "www" (obě varianty domény
+   * fungují) — proto musí být povolené OBĚ, jinak přihlášení do
+   * administrace z varianty, která v NEXT_PUBLIC_SERVER_URL chybí,
+   * skončí chybou CORS při ukládání.
    */
-  cors: [process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'],
+  cors: povoleneAdresy,
 
   /**
    * CSRF ochrana — přihlašovací cookie se přijme jen u požadavků
    * přicházejících z těchto adres. Brání útoku, kdy by cizí stránka
    * "potají" odeslala požadavek jménem přihlášeného uživatele.
    */
-  csrf: [process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'],
+  csrf: povoleneAdresy,
 
   /**
    * Globální limit velikosti nahrávaných souborů (v bajtech) — 15 MB.

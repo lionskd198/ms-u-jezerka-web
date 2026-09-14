@@ -18,9 +18,33 @@
  * kliknutí na "Publikovat". Payload navíc ukládá historii verzí — v detailu
  * článku se dá vrátit ke starší verzi.
  */
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Where } from 'payload'
 
 import { jePrihlasen } from '../access'
+
+/**
+ * "Kde" podmínka pro veřejně viditelné aktuality — publikované A zároveň
+ * buď bez vyplněné platnosti, nebo s platností v budoucnu (případně dnes).
+ *
+ * Používá se na DVOU místech, která spolu jinak nesouvisí, a musí dávat
+ * stejný výsledek:
+ *  1) tady v `access.read` (REST/GraphQL API, admin rozhraní),
+ *  2) ve veřejných stránkách webu (Local API `payload.find`).
+ * Local API totiž při volání bez `overrideAccess: false` access control
+ * PŘESKAKUJE (výchozí chování Payloadu) — filtr z `access.read` by se tak
+ * na veřejný web vůbec neuplatnil, proto ho stránky musí použít ručně.
+ */
+export const verejnyDotazAktuality = (): Where => ({
+  and: [
+    { _status: { equals: 'published' } },
+    {
+      or: [
+        { platnostDo: { exists: false } },
+        { platnostDo: { greater_than_equal: new Date().toISOString() } },
+      ],
+    },
+  ],
+})
 
 /**
  * Typy článků — konstantu opět sdílíme s veřejným webem (filtr, štítky).
@@ -84,7 +108,7 @@ export const Aktuality: CollectionConfig = {
       if (req.user) {
         return true
       }
-      return { _status: { equals: 'published' } }
+      return verejnyDotazAktuality()
     },
     create: jePrihlasen,
     update: jePrihlasen,
@@ -209,6 +233,17 @@ export const Aktuality: CollectionConfig = {
             return value
           },
         ],
+      },
+    },
+    {
+      name: 'platnostDo',
+      type: 'date',
+      label: 'Platnost do (nepovinné)',
+      admin: {
+        position: 'sidebar',
+        date: { pickerAppearance: 'dayAndTime', displayFormat: 'd. M. yyyy HH:mm' },
+        description:
+          'Po tomto datu se aktualita na webu přestane zobrazovat (výpis, detail, sitemapa). Zůstane uložená a jde ji kdykoli prodloužit nebo smazat datum úplně. Necháš-li prázdné, platí bez omezení.',
       },
     },
   ],

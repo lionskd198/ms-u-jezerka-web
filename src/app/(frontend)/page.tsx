@@ -17,6 +17,7 @@ import Link from 'next/link'
 import { getPayload } from 'payload'
 import React from 'react'
 
+import { verejnyDotazAktuality } from '@/collections/Aktuality'
 import config from '@/payload.config'
 
 import { AktualitaKarta } from './komponenty/AktualitaKarta'
@@ -54,6 +55,7 @@ export default async function UvodniStranka() {
   // Access control kolekce sám zajistí, že nepřihlášeným vrátí jen publikované.
   const aktuality = await payload.find({
     collection: 'aktuality',
+    where: verejnyDotazAktuality(),
     sort: '-publishedAt',
     limit: 2,
   })

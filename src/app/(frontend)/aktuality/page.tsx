@@ -15,7 +15,7 @@ import Link from 'next/link'
 import { getPayload, type Where } from 'payload'
 import React from 'react'
 
-import { TYPY_AKTUALIT } from '@/collections/Aktuality'
+import { TYPY_AKTUALIT, verejnyDotazAktuality } from '@/collections/Aktuality'
 import config from '@/payload.config'
 
 import { formatujDatum } from '../komponenty/AktualitaKarta'
@@ -36,10 +36,12 @@ export default async function AktualityStranka({
   const { typ } = await searchParams
   const payload = await getPayload({ config })
 
-  // Podmínka dotazu (typ Where = "query" objekt Payloadu).
-  // Když je v URL platný typ, filtrujeme; jinak vracíme vše.
+  // Podmínka dotazu (typ Where = "query" objekt Payloadu) — vždy jen
+  // veřejně viditelné aktuality, případně navíc zúžené podle typu z URL.
   const jePlatnyTyp = TYPY_AKTUALIT.some((t) => t.value === typ)
-  const where: Where | undefined = jePlatnyTyp ? { typ: { equals: typ } } : undefined
+  const where: Where = jePlatnyTyp
+    ? { and: [verejnyDotazAktuality(), { typ: { equals: typ } }] }
+    : verejnyDotazAktuality()
 
   const aktuality = await payload.find({
     collection: 'aktuality',
