@@ -21,6 +21,11 @@
 import type { CollectionConfig, Where } from 'payload'
 
 import { jePrihlasen } from '../access'
+import { rozeslatAktualitu } from '../email/rozeslatAktualitu'
+import type { Aktualita } from '../payload-types'
+
+/** Kolikrát zkusit zapsat výsledek rozeslání zpět k článku (viz hook níže). */
+const POKUSU_O_ZAPIS_VYSLEDKU = 4
 
 /**
  * "Kde" podmínka pro veřejně viditelné aktuality — publikované A zároveň
@@ -113,6 +118,78 @@ export const Aktuality: CollectionConfig = {
     create: jePrihlasen,
     update: jePrihlasen,
     delete: jePrihlasen,
+  },
+
+  hooks: {
+    /**
+     * ROZESLÁNÍ E-MAILEM — krok 1 (před uložením): rozhodne, jestli se má
+     * právě teď rozesílat, a rovnou si to poznačí do `rozeslanoDne`.
+     * Posílá se jen JEDNOU: při publikování článku, který má zvolené
+     * rozeslání a ještě rozeslaný nebyl. Pozdější úpravy už nic neposílají.
+     */
+    beforeChange: [
+      ({ data, originalDoc, req, context }) => {
+        if (context.bezRozeslani) return data
+
+        const uzRozeslano = Boolean(originalDoc?.rozeslanoDne)
+        const chceRozeslat = data.rozeslani === 'vsem' || data.rozeslani === 'tride'
+        const jePublikovano = data._status === 'published'
+        const jeProsla = Boolean(data.platnostDo && new Date(data.platnostDo) < new Date())
+
+        if (!uzRozeslano && chceRozeslat && jePublikovano && !jeProsla) {
+          data.rozeslanoDne = new Date().toISOString()
+          req.context.rozeslatAktualitu = true
+        }
+        return data
+      },
+    ],
+
+    /**
+     * ROZESLÁNÍ E-MAILEM — krok 2 (po uložení): samotné odeslání běží na
+     * pozadí (bez `await`), aby editor nečekal na desítky e-mailů. Výsledek
+     * se pak zapíše k článku; zápis se zkouší opakovaně, protože těsně po
+     * uložení ještě nemusí být článek v databázi potvrzený.
+     */
+    afterChange: [
+      ({ doc, req, context }) => {
+        if (!context.rozeslatAktualitu) return doc
+        context.rozeslatAktualitu = false
+
+        const { payload } = req
+        const aktualita = doc as Aktualita
+
+        void (async () => {
+          let vysledek: string
+          try {
+            vysledek = await rozeslatAktualitu(payload, aktualita)
+          } catch (chyba) {
+            payload.logger.error({ err: chyba, msg: 'Rozeslání aktuality selhalo' })
+            vysledek = 'Rozeslání selhalo — podrobnosti jsou v logu serveru.'
+          }
+          payload.logger.info(`Rozeslání aktuality „${aktualita.nazev}": ${vysledek}`)
+
+          for (let pokus = 1; pokus <= POKUSU_O_ZAPIS_VYSLEDKU; pokus += 1) {
+            try {
+              await payload.update({
+                collection: 'aktuality',
+                id: aktualita.id,
+                data: { rozeslaniVysledek: vysledek },
+                context: { bezRozeslani: true },
+              })
+              return
+            } catch (chyba) {
+              if (pokus === POKUSU_O_ZAPIS_VYSLEDKU) {
+                payload.logger.error({ err: chyba, msg: 'Zápis výsledku rozeslání selhal' })
+              } else {
+                await new Promise((resolve) => setTimeout(resolve, 2000))
+              }
+            }
+          }
+        })()
+
+        return doc
+      },
+    ],
   },
 
   fields: [
@@ -244,6 +321,70 @@ export const Aktuality: CollectionConfig = {
         date: { pickerAppearance: 'dayAndTime', displayFormat: 'd. M. yyyy HH:mm' },
         description:
           'Po tomto datu se aktualita na webu přestane zobrazovat (výpis, detail, sitemapa). Zůstane uložená a jde ji kdykoli prodloužit nebo smazat datum úplně. Necháš-li prázdné, platí bez omezení.',
+      },
+    },
+    {
+      name: 'rozeslani',
+      type: 'select',
+      label: 'Rozeslat e-mailem rodičům',
+      defaultValue: 'neposilat',
+      options: [
+        { label: 'Neposílat', value: 'neposilat' },
+        { label: 'Všem rodičům', value: 'vsem' },
+        { label: 'Jen vybraným třídám', value: 'tride' },
+      ],
+      admin: {
+        position: 'sidebar',
+        description:
+          'E-mail s odkazem na aktualitu se odešle jednou — ve chvíli, kdy článek publikuješ. Koncepty ani pozdější úpravy nic neposílají. Adresy se berou z adresáře Rodiče.',
+      },
+    },
+    {
+      name: 'rozeslatTridam',
+      type: 'relationship',
+      relationTo: 'tridy',
+      hasMany: true,
+      label: 'Kterým třídám',
+      admin: {
+        position: 'sidebar',
+        condition: (data) => data?.rozeslani === 'tride',
+      },
+      validate: (hodnota, { siblingData }) => {
+        const chceTridy = (siblingData as { rozeslani?: string })?.rozeslani === 'tride'
+        if (chceTridy && (!Array.isArray(hodnota) || hodnota.length === 0)) {
+          return 'Vyber aspoň jednu třídu, které se má e-mail poslat.'
+        }
+        return true
+      },
+    },
+    {
+      // Vyplňuje jen systém (hook výše) — podle něj se pozná, že už se rozesílalo.
+      name: 'rozeslanoDne',
+      type: 'date',
+      label: 'Rozesláno dne',
+      access: {
+        create: () => false,
+        update: () => false,
+      },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        date: { pickerAppearance: 'dayAndTime', displayFormat: 'd. M. yyyy HH:mm' },
+        condition: (data) => Boolean(data?.rozeslanoDne),
+      },
+    },
+    {
+      name: 'rozeslaniVysledek',
+      type: 'text',
+      label: 'Výsledek rozeslání',
+      access: {
+        create: () => false,
+        update: () => false,
+      },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        condition: (data) => Boolean(data?.rozeslaniVysledek),
       },
     },
   ],

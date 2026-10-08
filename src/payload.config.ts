@@ -16,6 +16,7 @@
  *   - TypeScript typy (soubor payload-types.ts → příkaz `npm run generate:types`).
  */
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import {
   defaultColors,
   FixedToolbarFeature,
@@ -39,6 +40,7 @@ import { Aktuality } from './collections/Aktuality'
 import { Trida } from './collections/Trida'
 import { Fotografie } from './collections/Fotografie'
 import { Projekty } from './collections/Projekty'
+import { Rodice } from './collections/Rodice'
 import { ONas } from './globals/ONas'
 import { Kontakty } from './globals/Kontakty'
 // Databázové migrace — viz komentář u `prodMigrations` níže.
@@ -68,6 +70,35 @@ const dirname = path.dirname(filename)
  * bez nich (typicky na tvém počítači) se nic nemění a jede se z disku.
  */
 const pouzitS3Uloziste = Boolean(process.env.S3_BUCKET)
+
+/**
+ * =============================================================================
+ * ODESÍLÁNÍ E-MAILŮ (SMTP — Seznam)
+ * =============================================================================
+ *
+ * Používá se pro rozesílání aktualit rodičům (viz src/email) a pro
+ * „Zapomněli jste heslo?" v administraci. Zapne se, jakmile jsou vyplněné
+ * SMTP_* proměnné; bez nich Payload e-maily jen vypisuje do logu.
+ *
+ * Seznam dovolí odesílat jen z adresy přihlášeného účtu, proto je odesílatel
+ * vždy SMTP_USER. Port 465 = šifrované spojení od začátku (secure: true).
+ */
+const smtpPort = Number(process.env.SMTP_PORT || 465)
+const emailAdapter = process.env.SMTP_HOST
+  ? nodemailerAdapter({
+      defaultFromAddress: process.env.SMTP_USER || '',
+      defaultFromName: 'MŠ U Jezérka',
+      transportOptions: {
+        host: process.env.SMTP_HOST,
+        port: smtpPort,
+        secure: smtpPort === 465,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      },
+    })
+  : undefined
 
 /**
  * Adresa webu z .env (bez, nebo s "www", podle toho, co je nastavené) +
@@ -101,7 +132,7 @@ export default buildConfig({
   },
 
   // Registrace veškerého obsahu — pořadí zde = pořadí v menu administrace
-  collections: [Aktuality, Dokumenty, Trida, Fotografie, Projekty, Media, Users],
+  collections: [Aktuality, Dokumenty, Trida, Fotografie, Projekty, Rodice, Media, Users],
   globals: [ONas, Kontakty],
 
   /**
@@ -164,6 +195,9 @@ export default buildConfig({
 
   // Knihovna pro zpracování obrázků (zmenšené verze v kolekci Média)
   sharp,
+
+  // Odesílání e-mailů — viz `emailAdapter` nahoře (bez SMTP_* se jen loguje).
+  ...(emailAdapter && { email: emailAdapter }),
 
   // ===========================================================================
   // ZABEZPEČENÍ

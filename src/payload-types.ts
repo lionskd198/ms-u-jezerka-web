@@ -72,6 +72,7 @@ export interface Config {
     tridy: Trida;
     fotografie: Fotografie;
     projekty: Projekt;
+    rodice: Rodic;
     media: Media;
     users: User;
     'payload-kv': PayloadKv;
@@ -86,6 +87,7 @@ export interface Config {
     tridy: TridySelect<false> | TridySelect<true>;
     fotografie: FotografieSelect<false> | FotografieSelect<true>;
     projekty: ProjektySelect<false> | ProjektySelect<true>;
+    rodice: RodiceSelect<false> | RodiceSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -186,6 +188,13 @@ export interface Aktualita {
    * Po tomto datu se aktualita na webu přestane zobrazovat (výpis, detail, sitemapa). Zůstane uložená a jde ji kdykoli prodloužit nebo smazat datum úplně. Necháš-li prázdné, platí bez omezení.
    */
   platnostDo?: string | null;
+  /**
+   * E-mail s odkazem na aktualitu se odešle jednou — ve chvíli, kdy článek publikuješ. Koncepty ani pozdější úpravy nic neposílají. Adresy se berou z adresáře Rodiče.
+   */
+  rozeslani?: ('neposilat' | 'vsem' | 'tride') | null;
+  rozeslatTridam?: (number | Trida)[] | null;
+  rozeslanoDne?: string | null;
+  rozeslaniVysledek?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -374,6 +383,27 @@ export interface Projekt {
   createdAt: string;
 }
 /**
+ * E-mailové adresy rodičů pro rozesílání aktualit. U aktuality se pak volí, jestli jde všem, nebo jen vybraným třídám.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rodice".
+ */
+export interface Rodic {
+  id: number;
+  email: string;
+  jmeno?: string | null;
+  /**
+   * Třídy, do kterých chodí děti tohoto rodiče. Rozhoduje o tom, které e-maily „jen pro třídu" dostane.
+   */
+  tridy?: (number | Trida)[] | null;
+  /**
+   * Odškrtni, když si rodič e-maily nepřeje — adresa zůstane uložená, ale nic mu nepřijde.
+   */
+  odebira?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Účty pro přístup do administrace. Role určuje, co kdo smí.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -450,6 +480,10 @@ export interface PayloadLockedDocument {
         value: number | Projekt;
       } | null)
     | ({
+        relationTo: 'rodice';
+        value: number | Rodic;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
@@ -514,6 +548,10 @@ export interface AktualitySelect<T extends boolean = true> {
   prilohy?: T;
   publishedAt?: T;
   platnostDo?: T;
+  rozeslani?: T;
+  rozeslatTridam?: T;
+  rozeslanoDne?: T;
+  rozeslaniVysledek?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -586,6 +624,18 @@ export interface ProjektySelect<T extends boolean = true> {
   nazev?: T;
   popis?: T;
   obrazek?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rodice_select".
+ */
+export interface RodiceSelect<T extends boolean = true> {
+  email?: T;
+  jmeno?: T;
+  tridy?: T;
+  odebira?: T;
   updatedAt?: T;
   createdAt?: T;
 }

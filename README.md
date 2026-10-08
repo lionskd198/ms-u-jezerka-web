@@ -158,6 +158,18 @@ disku by se ztratily. Přepíná se to samo podle vyplněných `S3_*` proměnný
 v `.env` (`pouzitS3Uloziste` v `payload.config.ts`) — bez nich lokální vývoj
 funguje beze změny.
 
+## Rozesílání aktualit rodičům e-mailem
+
+- Adresy rodičů jsou v kolekci **Rodiče** (Správa) — e-mail + třídy, do
+  kterých chodí jejich děti. Nejsou veřejně čitelné.
+- U aktuality je v postranním panelu **Rozeslat e-mailem rodičům**:
+  *Neposílat* / *Všem rodičům* / *Jen vybraným třídám*.
+- E-mail se odešle **jednou, při publikování** (koncepty ani pozdější úpravy
+  nic neposílají). Každý rodič dostane vlastní zprávu s odkazem na článek;
+  výsledek se zapíše k aktualitě do pole *Výsledek rozeslání*.
+- Odesílá se přes SMTP z `SMTP_*` proměnných (viz `.env.example`); logika je
+  v `src/email/rozeslatAktualitu.ts` a v hoocích kolekce Aktuality.
+
 ## Nasazení na Zerops
 
 Projekt běží na [Zerops](https://zerops.io) v projektu **web**
@@ -173,6 +185,7 @@ založení od nuly někde jinde).
 | --- | --- |
 | `DATABASE_URI` | `${postgresql_connectionString}/${postgresql_dbName}` |
 | `PAYLOAD_SECRET` | vygenerovaný náhodný řetězec (jako lokální v `.env`), ideálně jako **Secret** |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | nepovinné — SMTP pro odesílání e-mailů (Seznam: `smtp.seznam.cz`, `465`, adresa schránky, heslo jako **Secret**) |
 
 `NEXT_PUBLIC_SERVER_URL` v GUI nastavovat nemusíš — je napevno v
 `zerops.yml` (skutečná doména), protože `NEXT_PUBLIC_*` proměnné Next.js
