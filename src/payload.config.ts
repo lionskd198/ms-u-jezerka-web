@@ -81,7 +81,7 @@ const pouzitS3Uloziste = Boolean(process.env.S3_BUCKET)
  * SMTP_* proměnné; bez nich Payload e-maily jen vypisuje do logu.
  *
  * Seznam dovolí odesílat jen z adresy přihlášeného účtu, proto je odesílatel
- * vždy SMTP_USER. Port 465 = šifrované spojení od začátku (secure: true).
+ * vždy SMTP_USER. Port 465 = šifrované spojení od začátku, port 587 = STARTTLS.
  */
 const smtpPort = Number(process.env.SMTP_PORT || 465)
 const emailAdapter = process.env.SMTP_HOST
@@ -92,6 +92,8 @@ const emailAdapter = process.env.SMTP_HOST
         host: process.env.SMTP_HOST,
         port: smtpPort,
         secure: smtpPort === 465,
+        // Na jiném portu (587) se šifruje až přes STARTTLS — bez něj neposílat.
+        requireTLS: smtpPort !== 465,
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
