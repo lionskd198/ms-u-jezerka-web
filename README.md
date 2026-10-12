@@ -185,7 +185,7 @@ založení od nuly někde jinde).
 | --- | --- |
 | `DATABASE_URI` | `${postgresql_connectionString}/${postgresql_dbName}` |
 | `PAYLOAD_SECRET` | vygenerovaný náhodný řetězec (jako lokální v `.env`), ideálně jako **Secret** |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | nepovinné — SMTP pro odesílání e-mailů (Seznam: `smtp.seznam.cz`, `465`, adresa schránky, heslo jako **Secret**) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | nepovinné — SMTP pro odesílání e-mailů (Seznam: `smtp.seznam.cz`, port `587` — Zerops port 465 blokuje, adresa schránky, heslo jako **Secret**) |
 
 `NEXT_PUBLIC_SERVER_URL` v GUI nastavovat nemusíš — je napevno v
 `zerops.yml` (skutečná doména), protože `NEXT_PUBLIC_*` proměnné Next.js

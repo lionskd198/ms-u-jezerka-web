@@ -81,14 +81,22 @@ const pouzitS3Uloziste = Boolean(process.env.S3_BUCKET)
  * SMTP_* proměnné; bez nich Payload e-maily jen vypisuje do logu.
  *
  * Seznam dovolí odesílat jen z adresy přihlášeného účtu, proto je odesílatel
- * vždy SMTP_USER. Port 465 = šifrované spojení od začátku, port 587 = STARTTLS.
+ * vždy SMTP_USER. Používáme port 587 (STARTTLS) — Zerops odchozí port 465
+ * blokuje. Port 465 (šifrování od začátku) funguje jen mimo Zerops.
  */
-const smtpPort = Number(process.env.SMTP_PORT || 465)
+const smtpPort = Number(process.env.SMTP_PORT || 587)
 const emailAdapter = process.env.SMTP_HOST
   ? nodemailerAdapter({
       defaultFromAddress: process.env.SMTP_USER || '',
       defaultFromName: 'MŠ U Jezérka',
+      // Bez tohohle Payload při startu čeká na zkušební připojení k SMTP —
+      // když je server nedostupný, web kvůli tomu několik minut nenaběhne.
+      skipVerify: true,
       transportOptions: {
+        // Nedostupný server se má vzdát rychle, ne po výchozích 2 minutách.
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 30000,
         host: process.env.SMTP_HOST,
         port: smtpPort,
         secure: smtpPort === 465,
