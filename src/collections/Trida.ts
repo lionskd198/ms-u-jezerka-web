@@ -170,5 +170,28 @@ export const Trida: CollectionConfig = {
         },
       ],
     },
+    {
+      /**
+       * E-maily rodičů této třídy — jen POHLED do kolekce Rodiče (pole typu
+       * `join` nic neukládá, v databázi žádný sloupec nemá). Tabulka ukáže
+       * rodiče, kteří mají tuhle třídu přiřazenou, a tlačítkem „Přidat" jde
+       * založit nového rovnou s touto třídou. Adresy tak zůstávají v kolekci
+       * Rodiče, která není veřejně čitelná; nepřihlášený je tu neuvidí.
+       */
+      name: 'rodice',
+      type: 'join',
+      collection: 'rodice',
+      on: 'tridy',
+      label: 'Rodiče (e-maily pro rozesílání aktualit)',
+      defaultLimit: 50,
+      access: {
+        read: ({ req }) => Boolean(req.user),
+      },
+      admin: {
+        defaultColumns: ['email', 'jmeno', 'odebira'],
+        description:
+          'Adresy, na které chodí aktuality rozeslané této třídě. Přidáním zde vznikne záznam v adresáři Rodiče.',
+      },
+    },
   ],
 }

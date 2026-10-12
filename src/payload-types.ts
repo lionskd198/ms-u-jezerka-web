@@ -80,7 +80,11 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    tridy: {
+      rodice: 'rodice';
+    };
+  };
   collectionsSelect: {
     aktuality: AktualitySelect<false> | AktualitySelect<true>;
     dokumenty: DokumentySelect<false> | DokumentySelect<true>;
@@ -341,6 +345,35 @@ export interface Trida {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Adresy, na které chodí aktuality rozeslané této třídě. Přidáním zde vznikne záznam v adresáři Rodiče.
+   */
+  rodice?: {
+    docs?: (number | Rodic)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * E-mailové adresy rodičů pro rozesílání aktualit. U aktuality se pak volí, jestli jde všem, nebo jen vybraným třídám.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rodice".
+ */
+export interface Rodic {
+  id: number;
+  email: string;
+  jmeno?: string | null;
+  /**
+   * Třídy, do kterých chodí děti tohoto rodiče. Rozhoduje o tom, které e-maily „jen pro třídu" dostane.
+   */
+  tridy?: (number | Trida)[] | null;
+  /**
+   * Odškrtni, když si rodič e-maily nepřeje — adresa zůstane uložená, ale nic mu nepřijde.
+   */
+  odebira?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -379,27 +412,6 @@ export interface Projekt {
    */
   popis?: string | null;
   obrazek?: (number | null) | Media;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * E-mailové adresy rodičů pro rozesílání aktualit. U aktuality se pak volí, jestli jde všem, nebo jen vybraným třídám.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "rodice".
- */
-export interface Rodic {
-  id: number;
-  email: string;
-  jmeno?: string | null;
-  /**
-   * Třídy, do kterých chodí děti tohoto rodiče. Rozhoduje o tom, které e-maily „jen pro třídu" dostane.
-   */
-  tridy?: (number | Trida)[] | null;
-  /**
-   * Odškrtni, když si rodič e-maily nepřeje — adresa zůstane uložená, ale nic mu nepřijde.
-   */
-  odebira?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -601,6 +613,7 @@ export interface TridySelect<T extends boolean = true> {
         popis?: T;
         id?: T;
       };
+  rodice?: T;
   updatedAt?: T;
   createdAt?: T;
 }
