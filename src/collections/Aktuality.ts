@@ -21,7 +21,12 @@
 import type { CollectionConfig, Where } from 'payload'
 
 import { jePrihlasen } from '../access'
-import { rozeslatAktualitu } from '../email/rozeslatAktualitu'
+import {
+  CELA_ROZESILKA,
+  popisChyby,
+  rozeslatAktualitu,
+  zapisDoPrehledu,
+} from '../email/rozeslatAktualitu'
 import type { Aktualita } from '../payload-types'
 
 /** Kolikrát zkusit zapsat výsledek rozeslání zpět k článku (viz hook níže). */
@@ -164,7 +169,13 @@ export const Aktuality: CollectionConfig = {
             vysledek = await rozeslatAktualitu(payload, aktualita)
           } catch (chyba) {
             payload.logger.error({ err: chyba, msg: 'Rozeslání aktuality selhalo' })
-            vysledek = 'Rozeslání selhalo — podrobnosti jsou v logu serveru.'
+            vysledek = 'Rozeslání selhalo — podrobnosti jsou v přehledu Odeslané e-maily.'
+            await zapisDoPrehledu(payload, {
+              prijemce: CELA_ROZESILKA,
+              stav: 'chyba',
+              aktualita: aktualita.id,
+              chyba: popisChyby(chyba),
+            })
           }
           payload.logger.info(`Rozeslání aktuality „${aktualita.nazev}": ${vysledek}`)
 

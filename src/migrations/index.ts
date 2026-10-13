@@ -7,6 +7,7 @@ import * as migration_20260819_180453_pridat_fotografie_ucitelky_pole from './20
 import * as migration_20260831_163524_pridat_projekty_a_fotky_trid from './20260831_163524_pridat_projekty_a_fotky_trid';
 import * as migration_20260907_151737_pridat_platnost_aktualitam from './20260907_151737_pridat_platnost_aktualitam';
 import * as migration_20261008_173210_pridat_rodice_a_rozesilani from './20261008_173210_pridat_rodice_a_rozesilani';
+import * as migration_20261013_174718_pridat_prehled_odeslanych_emailu from './20261013_174718_pridat_prehled_odeslanych_emailu';
 
 export const migrations = [
   {
@@ -52,6 +53,11 @@ export const migrations = [
   {
     up: migration_20261008_173210_pridat_rodice_a_rozesilani.up,
     down: migration_20261008_173210_pridat_rodice_a_rozesilani.down,
-    name: '20261008_173210_pridat_rodice_a_rozesilani'
+    name: '20261008_173210_pridat_rodice_a_rozesilani',
+  },
+  {
+    up: migration_20261013_174718_pridat_prehled_odeslanych_emailu.up,
+    down: migration_20261013_174718_pridat_prehled_odeslanych_emailu.down,
+    name: '20261013_174718_pridat_prehled_odeslanych_emailu'
   },
 ];

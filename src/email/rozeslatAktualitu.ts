@@ -15,7 +15,7 @@
  */
 import type { BasePayload, Where } from 'payload'
 
-import type { Aktualita } from '../payload-types'
+import type { Aktualita, OdeslanyEmail } from '../payload-types'
 
 /** Pauza mezi e-maily — ať SMTP server nedostane desítky zpráv naráz. */
 const PAUZA_MEZI_EMAILY_MS = 400
@@ -69,6 +69,49 @@ export const najdiPrijemce = async (
 
   // Stejná adresa nesmí dostat e-mail dvakrát.
   return Array.from(new Set(rodice.docs.map((rodic) => rodic.email.trim().toLowerCase())))
+}
+
+/** Místo adresy u záznamu, který se týká celé rozesílky (ne jednoho rodiče). */
+export const CELA_ROZESILKA = '— celá rozesílka —'
+
+/**
+ * Z chyby udělá čitelný popis pro přehled. Chyby z SMTP (nodemailer) nesou
+ * kromě textu i kód (ETIMEDOUT, EAUTH…), fázi spojení a odpověď serveru —
+ * právě podle nich se pozná, PROČ odeslání neprošlo.
+ */
+export const popisChyby = (chyba: unknown): string => {
+  if (!(chyba instanceof Error)) return String(chyba)
+  const { code, command, response, responseCode } = chyba as Error & {
+    code?: string
+    command?: string
+    response?: string
+    responseCode?: number
+  }
+  return [
+    chyba.message,
+    code && `Kód: ${code}`,
+    command && `Fáze: ${command}`,
+    responseCode && `Odpověď serveru: ${responseCode}`,
+    response && response !== chyba.message && response,
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
+/**
+ * Zapíše jeden e-mail do kolekce „Odeslané e-maily" (přehled pro editora).
+ * Selhání zápisu nesmí rozesílku zastavit — jen se zaloguje.
+ */
+export const zapisDoPrehledu = async (
+  payload: BasePayload,
+  zaznam: Pick<OdeslanyEmail, 'prijemce' | 'stav'> &
+    Partial<Pick<OdeslanyEmail, 'aktualita' | 'chyba' | 'predmet'>>,
+): Promise<void> => {
+  try {
+    await payload.create({ collection: 'odeslane-emaily', data: zaznam })
+  } catch (chyba) {
+    payload.logger.error({ err: chyba, msg: 'Zápis do přehledu odeslaných e-mailů selhal' })
+  }
 }
 
 /** Předmět + tělo e-mailu (HTML i čistý text pro klienty bez HTML). */
@@ -128,13 +171,25 @@ export const rozeslatAktualitu = async (
   payload: BasePayload,
   aktualita: Aktualita,
 ): Promise<string> => {
+  // Když se neodešle vůbec nic, musí být důvod vidět i v přehledu.
+  const neodeslano = async (duvod: string): Promise<string> => {
+    payload.logger.warn(`Rozeslání aktuality „${aktualita.nazev}": ${duvod}`)
+    await zapisDoPrehledu(payload, {
+      prijemce: CELA_ROZESILKA,
+      stav: 'chyba',
+      aktualita: aktualita.id,
+      chyba: duvod,
+    })
+    return duvod
+  }
+
   if (!process.env.SMTP_HOST) {
-    return 'Neodesláno — na serveru není nastavené odesílání e-mailů (SMTP).'
+    return neodeslano('Neodesláno — na serveru není nastavené odesílání e-mailů (SMTP).')
   }
 
   const prijemci = await najdiPrijemce(payload, aktualita)
   if (prijemci.length === 0) {
-    return 'Neodesláno — pro zvolené třídy není v adresáři Rodiče žádná adresa.'
+    return neodeslano('Neodesláno — pro zvolené třídy není v adresáři Rodiče žádná adresa.')
   }
 
   const kontakty = await payload.findGlobal({ slug: 'kontakty' })
@@ -148,6 +203,7 @@ export const rozeslatAktualitu = async (
   const chyby: string[] = []
 
   for (const adresa of prijemci) {
+    let duvodChyby: null | string = null
     try {
       await payload.sendEmail({
         to: adresa,
@@ -157,8 +213,16 @@ export const rozeslatAktualitu = async (
       odeslano += 1
     } catch (chyba) {
       chyby.push(adresa)
+      duvodChyby = popisChyby(chyba)
       payload.logger.error({ err: chyba, msg: `Rozeslání aktuality: e-mail na ${adresa} selhal` })
     }
+    await zapisDoPrehledu(payload, {
+      prijemce: adresa,
+      stav: duvodChyby ? 'chyba' : 'odeslano',
+      aktualita: aktualita.id,
+      predmet: email.subject,
+      chyba: duvodChyby,
+    })
     await pockej(PAUZA_MEZI_EMAILY_MS)
   }
 

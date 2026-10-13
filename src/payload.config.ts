@@ -41,6 +41,7 @@ import { Trida } from './collections/Trida'
 import { Fotografie } from './collections/Fotografie'
 import { Projekty } from './collections/Projekty'
 import { Rodice } from './collections/Rodice'
+import { OdeslaneEmaily } from './collections/OdeslaneEmaily'
 import { ONas } from './globals/ONas'
 import { Kontakty } from './globals/Kontakty'
 // Databázové migrace — viz komentář u `prodMigrations` níže.
@@ -97,6 +98,9 @@ const emailAdapter = process.env.SMTP_HOST
         connectionTimeout: 15000,
         greetingTimeout: 15000,
         socketTimeout: 30000,
+        // SMTP_DEBUG=1 vypíše do logu serveru celou komunikaci se SMTP
+        // serverem — jen na hledání závady, pak zase vypnout.
+        ...(process.env.SMTP_DEBUG === '1' && { logger: true, debug: true }),
         host: process.env.SMTP_HOST,
         port: smtpPort,
         secure: smtpPort === 465,
@@ -133,6 +137,12 @@ export default buildConfig({
     meta: {
       titleSuffix: ' — MŠ U Jezérka',
     },
+    // Hlášky „Uloženo / úspěšně vytvořeno" — nahoře uprostřed a na delší
+    // dobu, ať je editor nepřehlédne (výchozí jsou 4 s vpravo dole).
+    toast: {
+      duration: 8000,
+      position: 'top-center',
+    },
   },
 
   // Jazyk administrace: čeština, s angličtinou jako zálohou
@@ -142,7 +152,7 @@ export default buildConfig({
   },
 
   // Registrace veškerého obsahu — pořadí zde = pořadí v menu administrace
-  collections: [Aktuality, Dokumenty, Trida, Fotografie, Projekty, Rodice, Media, Users],
+  collections: [Aktuality, Dokumenty, Trida, Fotografie, Projekty, Rodice, OdeslaneEmaily, Media, Users],
   globals: [ONas, Kontakty],
 
   /**

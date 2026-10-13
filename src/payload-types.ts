@@ -73,6 +73,7 @@ export interface Config {
     fotografie: Fotografie;
     projekty: Projekt;
     rodice: Rodic;
+    'odeslane-emaily': OdeslanyEmail;
     media: Media;
     users: User;
     'payload-kv': PayloadKv;
@@ -92,6 +93,7 @@ export interface Config {
     fotografie: FotografieSelect<false> | FotografieSelect<true>;
     projekty: ProjektySelect<false> | ProjektySelect<true>;
     rodice: RodiceSelect<false> | RodiceSelect<true>;
+    'odeslane-emaily': OdeslaneEmailySelect<false> | OdeslaneEmailySelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -416,6 +418,22 @@ export interface Projekt {
   createdAt: string;
 }
 /**
+ * Přehled e-mailů rozeslaných rodičům — komu, kdy, ke které aktualitě a jestli se odeslání povedlo. Záznamy vytváří systém sám.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "odeslane-emaily".
+ */
+export interface OdeslanyEmail {
+  id: number;
+  prijemce: string;
+  stav: 'odeslano' | 'chyba';
+  aktualita?: (number | null) | Aktualita;
+  predmet?: string | null;
+  chyba?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Účty pro přístup do administrace. Role určuje, co kdo smí.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -494,6 +512,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'rodice';
         value: number | Rodic;
+      } | null)
+    | ({
+        relationTo: 'odeslane-emaily';
+        value: number | OdeslanyEmail;
       } | null)
     | ({
         relationTo: 'media';
@@ -649,6 +671,19 @@ export interface RodiceSelect<T extends boolean = true> {
   jmeno?: T;
   tridy?: T;
   odebira?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "odeslane-emaily_select".
+ */
+export interface OdeslaneEmailySelect<T extends boolean = true> {
+  prijemce?: T;
+  stav?: T;
+  aktualita?: T;
+  predmet?: T;
+  chyba?: T;
   updatedAt?: T;
   createdAt?: T;
 }

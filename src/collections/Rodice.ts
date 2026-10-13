@@ -74,6 +74,10 @@ export const Rodice: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: 'Odškrtni, když si rodič e-maily nepřeje — adresa zůstane uložená, ale nic mu nepřijde.',
+        components: {
+          // Ve výpisech fajfka / křížek místo textu „pravda / nepravda".
+          Cell: '/components/admin/BunkaAnoNe#BunkaAnoNe',
+        },
       },
     },
   ],
