@@ -12,6 +12,10 @@
  */
 import React from 'react'
 
+// Stránka sama data nečte, ale layout (patička) ano — při buildu není
+// k dispozici databáze ani PAYLOAD_SECRET, takže statický prerender by spadl.
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Prohlášení o přístupnosti',
 }
