@@ -141,6 +141,12 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           {kontakty.nazevSkoly}
           {kontakty.adresa && <> · {kontakty.adresa.replace(/\n/g, ', ')}</>}
           {kontakty.email && <> · {kontakty.email}</>}
+          {/* Odkaz na prohlášení o přístupnosti vyžaduje zákon č. 99/2019 Sb. */}
+          <div className="mt-2">
+            <Link href="/prohlaseni-o-pristupnosti" className="underline hover:text-white">
+              Prohlášení o přístupnosti
+            </Link>
+          </div>
         </footer>
       </body>
     </html>

@@ -36,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${ADRESA_WEBU}/fotografie`, changeFrequency: 'weekly', priority: 0.6 },
     { url: `${ADRESA_WEBU}/projekty`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${ADRESA_WEBU}/kontakty`, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${ADRESA_WEBU}/prohlaseni-o-pristupnosti`, changeFrequency: 'yearly', priority: 0.2 },
   ]
 
   // Všechny veřejně viditelné aktuality (publikované, s platnou platností)
