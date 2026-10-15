@@ -24,6 +24,7 @@ import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997e
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BunkaAnoNe as BunkaAnoNe_70025a2581c375fb8461776a29c07376 } from '../../../components/admin/BunkaAnoNe'
+import { HromadnyImportRodicu as HromadnyImportRodicu_550ebc7797c749aeb31ebd9218976ea5 } from '../../../components/admin/HromadnyImportRodicu'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -54,5 +55,6 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "/components/admin/BunkaAnoNe#BunkaAnoNe": BunkaAnoNe_70025a2581c375fb8461776a29c07376,
+  "/components/admin/HromadnyImportRodicu#HromadnyImportRodicu": HromadnyImportRodicu_550ebc7797c749aeb31ebd9218976ea5,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }
